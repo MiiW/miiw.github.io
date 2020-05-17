@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://study4.fun/"/>
-  <updated>2020-05-17T14:58:12.615Z</updated>
+  <updated>2020-05-17T15:17:29.377Z</updated>
   <id>https://study4.fun/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://study4.fun/2020/05/17/%E6%B5%8B%E8%AF%95/"/>
     <id>https://study4.fun/2020/05/17/%E6%B5%8B%E8%AF%95/</id>
     <published>2020-05-17T12:01:06.000Z</published>
-    <updated>2020-05-17T14:58:12.615Z</updated>
+    <updated>2020-05-17T15:17:29.377Z</updated>
     
     <content type="html"><![CDATA[<p>测试</p>]]></content>
     
@@ -44,7 +44,7 @@
     <link href="https://study4.fun/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/"/>
     <id>https://study4.fun/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/</id>
     <published>2020-03-05T06:53:16.000Z</published>
-    <updated>2020-05-17T14:58:12.651Z</updated>
+    <updated>2020-05-17T15:17:29.401Z</updated>
     
     <content type="html"><![CDATA[<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 双栈网络配置路由器的ipv6穿透</span><br><span class="line">english_title: config-ipv6</span><br><span class="line">date: 2017-06-13 13:26:55</span><br><span class="line">tags: [网络配置, IPV6]</span><br><span class="line">categories: 杂项</span><br><span class="line">---</span><br></pre></td></tr></table></figure><p>本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。</p><h1 id="1-修改路由器的软件源"><a href="#1-修改路由器的软件源" class="headerlink" title="1.修改路由器的软件源"></a>1.修改路由器的软件源</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dest root &#x2F;</span><br><span class="line">dest ram &#x2F;tmp</span><br><span class="line">lists_dir ext &#x2F;var&#x2F;opkg-lists</span><br><span class="line">option overlay_root &#x2F;overlay</span><br><span class="line">src&#x2F;gz 14.09_base http:&#x2F;&#x2F;downloads.openwrt.org.cn&#x2F;PandoraBox&#x2F;ralink&#x2F;packages&#x2F;base</span><br><span class="line">src&#x2F;gz 14.09_telephony http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;telephony</span><br><span class="line">src&#x2F;gz 14.09_packages http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;packages</span><br><span class="line">src&#x2F;gz 14.09_routing http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;routing</span><br><span class="line">src&#x2F;gz 14.09_management http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;management</span><br><span class="line">arch ralink 1</span><br><span class="line">arch all 2</span><br><span class="line">arch ramips_24kec 3</span><br></pre></td></tr></table></figure><p>注:软件源由于硬件配置不同的会有所区别，Newifi 是 MT7620 方案，其他芯片方案的请移步以下两个网址自行匹配：</p><blockquote><p>OpenWrt 中文网址  <a href="http://downloads.openwrt.org.cn/" target="_blank" rel="noopener">http://downloads.openwrt.org.cn/</a><br>OpenWrt download area <a href="https://downloads.openwrt.org/" target="_blank" rel="noopener">https://downloads.openwrt.org/</a></p></blockquote><h1 id="2-配置-Odhcpd"><a href="#2-配置-Odhcpd" class="headerlink" title="2.配置 Odhcpd"></a>2.配置 Odhcpd</h1><ul><li>软件包中更新并安装最新版本的 odhcpd</li><li>修改 dhcp 文件（文件路径：/etc/config/dhcp，不熟悉 ssh 的可以使用 winscp 修改)</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">config dnsmasq</span><br><span class="line">option domainneeded &#39;1&#39;</span><br><span class="line">option boguspriv &#39;1&#39;</span><br><span class="line">option filterwin2k &#39;0&#39;</span><br><span class="line">option localise_queries &#39;1&#39;</span><br><span class="line">option rebind_protection &#39;1&#39;</span><br><span class="line">option rebind_localhost &#39;1&#39;</span><br><span class="line">option local &#39;&#x2F;lan&#x2F;&#39;</span><br><span class="line">option domain &#39;lan&#39;</span><br><span class="line">option expandhosts &#39;1&#39;</span><br><span class="line">option nonegcache &#39;0&#39;</span><br><span class="line">option authoritative &#39;1&#39;</span><br><span class="line">option readethers &#39;1&#39;</span><br><span class="line">option leasefile &#39;&#x2F;tmp&#x2F;dhcp.leases&#39;</span><br><span class="line">option resolvfile &#39;&#x2F;tmp&#x2F;resolv.conf.auto&#39;</span><br><span class="line">option localservice &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;lan&#39;</span><br><span class="line">option interface &#39;lan&#39;</span><br><span class="line">option start &#39;100&#39;</span><br><span class="line">option limit &#39;150&#39;</span><br><span class="line">option leasetime &#39;12h&#39;</span><br><span class="line">option dhcpv6 &#39;hybrid&#39;</span><br><span class="line">option ra &#39;hybrid&#39;</span><br><span class="line">option ndp &#39;hybrid&#39;</span><br><span class="line">option ra_management &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;wan&#39;</span><br><span class="line">option interface &#39;wan&#39;</span><br><span class="line">option ignore &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config odhcpd &#39;odhcpd&#39;</span><br><span class="line">option maindhcp &#39;0&#39;</span><br><span class="line">option leasefile &#39;&#x2F;tmp&#x2F;hosts&#x2F;odhcpd&#39;</span><br><span class="line">option leasetrigger &#39;&#x2F;usr&#x2F;sbin&#x2F;odhcpd-update&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;wan6&#39;</span><br><span class="line">option interface &#39;wan&#39;</span><br><span class="line">option dhcpv6 &#39;hybrid&#39;</span><br><span class="line">option ra &#39;hybrid&#39;</span><br><span class="line">option ndp &#39;hybrid&#39;</span><br><span class="line">option master &#39;1&#39;</span><br></pre></td></tr></table></figure><p>修改后保存并重启路由器即可。</p><h1 id="3-后话"><a href="#3-后话" class="headerlink" title="3.后话"></a>3.后话</h1><p><del>配置后好像 dns 出了一些问题，在访问其他校内以.byr.cn 或.bupt.edu.cn 为后缀的网址显示 dns 错误，如果有大牛解决了这个 DNS 问题，可以分享一下思路。</del></p><p>2018.9.9 更新：后话所述问题已经解决</p>]]></content>
     
@@ -58,6 +58,33 @@
     </summary>
     
     
+    
+  </entry>
+  
+  <entry>
+    <title>2019的闲言碎语</title>
+    <link href="https://study4.fun/2020/01/01/2019%E7%9A%84%E9%97%B2%E8%A8%80%E7%A2%8E%E8%AF%AD/"/>
+    <id>https://study4.fun/2020/01/01/2019%E7%9A%84%E9%97%B2%E8%A8%80%E7%A2%8E%E8%AF%AD/</id>
+    <published>2020-01-01T15:02:57.000Z</published>
+    <updated>2020-05-17T15:17:29.373Z</updated>
+    
+    <content type="html"><![CDATA[<p>回顾总是有种从时间线开始的惯性。2019 年开始于天津不好吃的本地餐厅，结束于一顿火烧云不好吃的外卖。如同不好吃的饭，其实这一年经历的过程也算不上顺遂心意。</p><h1 id="平行的工作线"><a href="#平行的工作线" class="headerlink" title="平行的工作线"></a>平行的工作线</h1><p>年前的两个月忙着做实验室的项目，年后开始准备实习的事情。我常说自己足够幸运，在应该做某件事的时候就去做了这件事，这样尽力就好。但这也只是在事后对于自己的些微自嘲而已，我还是改不掉过分焦虑的坏毛病。正如高考前失眠，考研前默背政治到半夜，准备实习的我还是经常会自己一个人默默焦虑地胡思乱想到失眠。</p><p>中间经历了其实不算多的面试，因为想要投的岗位对口的其实并不算多。在实验室的经历让我走了一条和别的同学不太一样的岗位，得益于平时的兴趣比较杂比较宽泛，算是很幸运的拿到了实习岗位。其实回顾来看，最后的结果其实是超乎于我自己意料之外的，因为入职后见过身边远远优秀与我的同学太多。</p><p>如果对当前的选择感到迷茫，不如找一个能看清方向的人交流，远比自己尝试碰壁或者和同类人无效讨论要有效得多。希望自己能在以后的经历中谨记住这一点。</p><p>工作了三四个月，回顾下其实觉得收益到最多的反而是工作方式。很多时候，我们抱怨工作枯燥，内容无趣。但总是会有人能从这些枯燥的工作中提取出更有效的东西，提高自己的效率，提高自己的思考深度，这让我真切体会到平凡和优秀的区别。说和做，差的总是很远。</p><p>后面回到学校准备毕设中期，除了完成一篇自己之前觉得有点难度的水论文，倒也没有什么大的波澜。</p><h1 id="平行的生活线"><a href="#平行的生活线" class="headerlink" title="平行的生活线"></a>平行的生活线</h1><p>对于个人生活来说，19 年真的是很重要的一年。不同于工作上能够絮絮叨叨说出个所以然，对于我来说，生活是由一个个或难忘或开心或感动，也或是平凡幸福的时刻组成的。很多个这样的时刻会慢慢沉淀成一种潜移默化的东西，支撑自己在各种困难的时候坚持过去。今年这样的时刻格外的多，或许因为不再是一个人的原因吧。</p><p>如果说要给自己的 2020 寄托一些什么希冀一些什么，大概还是一些意识到却没有做到的东西。</p><ol><li>能够想到就去做，但是还没坚持做下去。</li><li>能够开始反思，但是还没及时改变。</li></ol><p>其实如果能做到这两点，总感觉 2020 就会好。但是人总是有点惰性的，我也还是那个对自己有限悲观的人。接下来的一年，能做到一个，也足够让我满足了。毕竟，顺遂心意永远是最重要的。拧巴地生活，还不如维持现状呢。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;回顾总是有种从时间线开始的惯性。2019 年开始于天津不好吃的本地餐厅，结束于一顿火烧云不好吃的外卖。如同不好吃的饭，其实这一年经历的过程也算不上顺遂心意。&lt;/p&gt;
+&lt;h1 id=&quot;平行的工作线&quot;&gt;&lt;a href=&quot;#平行的工作线&quot; class=&quot;headerlink&quot; t
+      
+    
+    </summary>
+    
+    
+      <category term="日记" scheme="https://study4.fun/categories/%E6%97%A5%E8%AE%B0/"/>
+    
+    
+      <category term="杂项" scheme="https://study4.fun/tags/%E6%9D%82%E9%A1%B9/"/>
     
   </entry>
   
