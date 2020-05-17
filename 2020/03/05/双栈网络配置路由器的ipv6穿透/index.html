@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>双栈网络配置路由器的ipv6穿透 | Study4Fun</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789101112dest root &#x2F;dest ram &#x2F;tmplists_dir ext &#x2F;var&#x2F;opkg-listsoption overlay_root &#x2F;overlaysrc&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="双栈网络配置路由器的ipv6穿透">
+<meta property="og:url" content="https://study4.fun/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/">
+<meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789101112dest root &#x2F;dest ram &#x2F;tmplists_dir ext &#x2F;var&#x2F;opkg-listsoption overlay_root &#x2F;overlaysrc&#x2F;">
+<meta property="article:published_time" content="2020-03-05T06:53:16.000Z">
+<meta property="article:modified_time" content="2020-05-17T12:14:43.605Z">
+<meta property="article:author" content="Mii Wang">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Study4Fun</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学而时习之</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://study4.fun"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-双栈网络配置路由器的ipv6穿透" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/" class="article-date">
+  <time datetime="2020-03-05T06:53:16.000Z" itemprop="datePublished">2020-03-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      双栈网络配置路由器的ipv6穿透
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。</p>
+<h1 id="1-修改路由器的软件源"><a href="#1-修改路由器的软件源" class="headerlink" title="1.修改路由器的软件源"></a>1.修改路由器的软件源</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dest root &#x2F;</span><br><span class="line">dest ram &#x2F;tmp</span><br><span class="line">lists_dir ext &#x2F;var&#x2F;opkg-lists</span><br><span class="line">option overlay_root &#x2F;overlay</span><br><span class="line">src&#x2F;gz 14.09_base http:&#x2F;&#x2F;downloads.openwrt.org.cn&#x2F;PandoraBox&#x2F;ralink&#x2F;packages&#x2F;base</span><br><span class="line">src&#x2F;gz 14.09_telephony http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;telephony</span><br><span class="line">src&#x2F;gz 14.09_packages http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;packages</span><br><span class="line">src&#x2F;gz 14.09_routing http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;routing</span><br><span class="line">src&#x2F;gz 14.09_management http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;management</span><br><span class="line">arch ralink 1</span><br><span class="line">arch all 2</span><br><span class="line">arch ramips_24kec 3</span><br></pre></td></tr></table></figure>
+
+<p>注:软件源由于硬件配置不同的会有所区别，Newifi 是 MT7620 方案，其他芯片方案的请移步以下两个网址自行匹配：</p>
+<blockquote>
+<p>OpenWrt 中文网址  <a href="http://downloads.openwrt.org.cn/" target="_blank" rel="noopener">http://downloads.openwrt.org.cn/</a><br>OpenWrt download area <a href="https://downloads.openwrt.org/" target="_blank" rel="noopener">https://downloads.openwrt.org/</a></p>
+</blockquote>
+<h1 id="2-配置-Odhcpd"><a href="#2-配置-Odhcpd" class="headerlink" title="2.配置 Odhcpd"></a>2.配置 Odhcpd</h1><ul>
+<li>软件包中更新并安装最新版本的 odhcpd</li>
+<li>修改 dhcp 文件（文件路径：/etc/config/dhcp，不熟悉 ssh 的可以使用 winscp 修改)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">config dnsmasq</span><br><span class="line">	option domainneeded &#39;1&#39;</span><br><span class="line">	option boguspriv &#39;1&#39;</span><br><span class="line">	option filterwin2k &#39;0&#39;</span><br><span class="line">	option localise_queries &#39;1&#39;</span><br><span class="line">	option rebind_protection &#39;1&#39;</span><br><span class="line">	option rebind_localhost &#39;1&#39;</span><br><span class="line">	option local &#39;&#x2F;lan&#x2F;&#39;</span><br><span class="line">	option domain &#39;lan&#39;</span><br><span class="line">	option expandhosts &#39;1&#39;</span><br><span class="line">	option nonegcache &#39;0&#39;</span><br><span class="line">	option authoritative &#39;1&#39;</span><br><span class="line">	option readethers &#39;1&#39;</span><br><span class="line">	option leasefile &#39;&#x2F;tmp&#x2F;dhcp.leases&#39;</span><br><span class="line">	option resolvfile &#39;&#x2F;tmp&#x2F;resolv.conf.auto&#39;</span><br><span class="line">	option localservice &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;lan&#39;</span><br><span class="line">	option interface &#39;lan&#39;</span><br><span class="line">	option start &#39;100&#39;</span><br><span class="line">	option limit &#39;150&#39;</span><br><span class="line">	option leasetime &#39;12h&#39;</span><br><span class="line">	option dhcpv6 &#39;hybrid&#39;</span><br><span class="line">	option ra &#39;hybrid&#39;</span><br><span class="line">	option ndp &#39;hybrid&#39;</span><br><span class="line">	option ra_management &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;wan&#39;</span><br><span class="line">	option interface &#39;wan&#39;</span><br><span class="line">	option ignore &#39;1&#39;</span><br><span class="line"></span><br><span class="line">config odhcpd &#39;odhcpd&#39;</span><br><span class="line">	option maindhcp &#39;0&#39;</span><br><span class="line">	option leasefile &#39;&#x2F;tmp&#x2F;hosts&#x2F;odhcpd&#39;</span><br><span class="line">	option leasetrigger &#39;&#x2F;usr&#x2F;sbin&#x2F;odhcpd-update&#39;</span><br><span class="line"></span><br><span class="line">config dhcp &#39;wan6&#39;</span><br><span class="line">	option interface &#39;wan&#39;</span><br><span class="line">	option dhcpv6 &#39;hybrid&#39;</span><br><span class="line">	option ra &#39;hybrid&#39;</span><br><span class="line">	option ndp &#39;hybrid&#39;</span><br><span class="line">	option master &#39;1&#39;</span><br></pre></td></tr></table></figure>
+
+<p>修改后保存并重启路由器即可。</p>
+<h1 id="3-后话"><a href="#3-后话" class="headerlink" title="3.后话"></a>3.后话</h1><p><del>配置后好像 dns 出了一些问题，在访问其他校内以.byr.cn 或.bupt.edu.cn 为后缀的网址显示 dns 错误，如果有大牛解决了这个 DNS 问题，可以分享一下思路。</del></p>
+<p>2018.9.9 更新：后话所述问题已经解决</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://study4.fun/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/" data-id="ckab0v4n400005hhkcc2vhnt8" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/05/17/%E6%B5%8B%E8%AF%95/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          测试
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">March 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/05/17/%E6%B5%8B%E8%AF%95/">测试</a>
+          </li>
+        
+          <li>
+            <a href="/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/">双栈网络配置路由器的ipv6穿透</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Mii Wang<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
