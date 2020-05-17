@@ -18,14 +18,14 @@
   
   
   <title>双栈网络配置路由器的ipv6穿透 | Hexo</title>
-  <meta name="description" content="本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789101112dest root &#x2F;dest ram &#x2F;tmplists_dir ext &#x2F;var&#x2F;opkg-listsoption overlay_root &#x2F;overlaysrc&#x2F;">
+  <meta name="description" content="1234567---title: 双栈网络配置路由器的ipv6穿透english_title: config-ipv6date: 2017-06-13 13:26:55tags: [网络配置, IPV6]categories: 杂项---  本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789">
 <meta property="og:type" content="article">
 <meta property="og:title" content="双栈网络配置路由器的ipv6穿透">
 <meta property="og:url" content="https://study4.fun/2020/03/05/%E5%8F%8C%E6%A0%88%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE%E8%B7%AF%E7%94%B1%E5%99%A8%E7%9A%84ipv6%E7%A9%BF%E9%80%8F/">
 <meta property="og:site_name" content="Study4Fun">
-<meta property="og:description" content="本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789101112dest root &#x2F;dest ram &#x2F;tmplists_dir ext &#x2F;var&#x2F;opkg-listsoption overlay_root &#x2F;overlaysrc&#x2F;">
+<meta property="og:description" content="1234567---title: 双栈网络配置路由器的ipv6穿透english_title: config-ipv6date: 2017-06-13 13:26:55tags: [网络配置, IPV6]categories: 杂项---  本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。 1.修改路由器的软件源123456789">
 <meta property="article:published_time" content="2020-03-05T06:53:16.000Z">
-<meta property="article:modified_time" content="2020-05-17T13:45:04.575Z">
+<meta property="article:modified_time" content="2020-05-17T14:58:12.651Z">
 <meta property="article:author" content="Mii Wang">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
@@ -310,7 +310,9 @@
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <p>本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。</p>
+        <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 双栈网络配置路由器的ipv6穿透</span><br><span class="line">english_title: config-ipv6</span><br><span class="line">date: 2017-06-13 13:26:55</span><br><span class="line">tags: [网络配置, IPV6]</span><br><span class="line">categories: 杂项</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+
+<p>本教程测试过程基于 Newifi Y2 路由器，系统为 PandoraBox，理论上 OpenWrt 原生同样适用。</p>
 <h1 id="1-修改路由器的软件源"><a href="#1-修改路由器的软件源" class="headerlink" title="1.修改路由器的软件源"></a>1.修改路由器的软件源</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">dest root &#x2F;</span><br><span class="line">dest ram &#x2F;tmp</span><br><span class="line">lists_dir ext &#x2F;var&#x2F;opkg-lists</span><br><span class="line">option overlay_root &#x2F;overlay</span><br><span class="line">src&#x2F;gz 14.09_base http:&#x2F;&#x2F;downloads.openwrt.org.cn&#x2F;PandoraBox&#x2F;ralink&#x2F;packages&#x2F;base</span><br><span class="line">src&#x2F;gz 14.09_telephony http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;telephony</span><br><span class="line">src&#x2F;gz 14.09_packages http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;packages</span><br><span class="line">src&#x2F;gz 14.09_routing http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;routing</span><br><span class="line">src&#x2F;gz 14.09_management http:&#x2F;&#x2F;downloads.openwrt.org&#x2F;chaos_calmer&#x2F;15.05&#x2F;ramips&#x2F;mt7620&#x2F;packages&#x2F;management</span><br><span class="line">arch ralink 1</span><br><span class="line">arch all 2</span><br><span class="line">arch ramips_24kec 3</span><br></pre></td></tr></table></figure>
 
 <p>注:软件源由于硬件配置不同的会有所区别，Newifi 是 MT7620 方案，其他芯片方案的请移步以下两个网址自行匹配：</p>
