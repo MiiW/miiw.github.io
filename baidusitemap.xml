@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://study4.fun/2017/06/13/config-ipv6/</loc>
+    <loc>https://study4.fun/2016/03/20/config-ipv6/</loc>
     <lastmod>2020-05-18</lastmod>
   </url>  <url>
-    <loc>https://study4.fun/2020/05/17/undefined/</loc>
+    <loc>https://study4.fun/2020/01/01/2019-comments/</loc>
     <lastmod>2020-05-18</lastmod>
   </url>  <url>
-    <loc>https://study4.fun/2020/01/01/undefined/</loc>
+    <loc>https://study4.fun/2018/09/09/config-dns/</loc>
+    <lastmod>2020-05-18</lastmod>
+  </url>  <url>
+    <loc>https://study4.fun/2018/09/09/k8s-pod-scheduling/</loc>
+    <lastmod>2020-05-18</lastmod>
+  </url>  <url>
+    <loc>https://study4.fun/2018/09/09/%E8%8B%B1%E6%96%87%E6%A0%87%E9%A2%98/</loc>
     <lastmod>2020-05-18</lastmod>
   </url>
 </urlset>
