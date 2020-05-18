@@ -1,0 +1,9 @@
+https://study4.fun/2020/01/01/2019-comments/
+https://study4.fun/2019/09/03/desired-state-of-world-populator/
+https://study4.fun/2019/05/22/list-all-pods/
+https://study4.fun/2019/05/17/go-basic/
+https://study4.fun/2019/04/25/k8s-api-server-security/
+https://study4.fun/2018/09/09/%E8%8B%B1%E6%96%87%E6%A0%87%E9%A2%98/
+https://study4.fun/2018/09/09/k8s-pod-scheduling/
+https://study4.fun/2018/09/09/config-dns/
+https://study4.fun/2016/03/20/config-ipv6/
