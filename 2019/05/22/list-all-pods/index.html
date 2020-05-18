@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Kubernetes Java Client代码学习——list all pods | Hexo</title>
+  <meta name="description" content="从官方提供的代码入手，”列出所有 Pod”的示例代码如下： 123456789101112public class Example &amp;#123;    public static void main(String[] args) throws IOException, ApiException&amp;#123;        ApiClient client &#x3D; Config.defaultClient">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes Java Client代码学习——list all pods">
+<meta property="og:url" content="https://study4.fun/2019/05/22/list-all-pods/">
+<meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="从官方提供的代码入手，”列出所有 Pod”的示例代码如下： 123456789101112public class Example &amp;#123;    public static void main(String[] args) throws IOException, ApiException&amp;#123;        ApiClient client &#x3D; Config.defaultClient">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1589796525746-9d58cc6b-db3d-4d7b-9f26-610e809620e4.png#align=left&display=inline&height=1183&margin=%5Bobject%20Object%5D&name=2534770445.png&originHeight=1183&originWidth=1810&size=97775&status=done&style=none&width=1810">
+<meta property="article:published_time" content="2019-05-22T08:08:00.000Z">
+<meta property="article:modified_time" content="2020-05-18T10:09:45.619Z">
+<meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1589796525746-9d58cc6b-db3d-4d7b-9f26-610e809620e4.png#align=left&display=inline&height=1183&margin=%5Bobject%20Object%5D&name=2534770445.png&originHeight=1183&originWidth=1810&size=97775&status=done&style=none&width=1810">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://study4.fun/2019/05/22/list-all-pods/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.svg" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/MiiW" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">MiiW</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">一个普通开发者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> BUPT, Beijing</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/">日记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Server/" rel="tag">API Server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DNS/" rel="tag">DNS</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/" rel="tag">Golang</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPV6/" rel="tag">IPV6</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pod/" rel="tag">Pod</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag">学习笔记</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9D%82%E9%A1%B9/" rel="tag">杂项</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">网络配置</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/API-Server/" style="font-size: 13px;">API Server</a> <a href="/tags/DNS/" style="font-size: 13.5px;">DNS</a> <a href="/tags/Golang/" style="font-size: 13px;">Golang</a> <a href="/tags/IPV6/" style="font-size: 13px;">IPV6</a> <a href="/tags/Kubernetes/" style="font-size: 14px;">Kubernetes</a> <a href="/tags/Pod/" style="font-size: 13px;">Pod</a> <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" style="font-size: 14px;">学习笔记</a> <a href="/tags/%E6%9D%82%E9%A1%B9/" style="font-size: 13px;">杂项</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 14px;">网络配置</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%97%A5%E8%AE%B0/">日记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020/01/01/2019-comments/" class="title">2019的闲言碎语</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-01-01T08:45:58.000Z" itemprop="datePublished">2020-01-01</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2019/05/22/list-all-pods/" class="title">Kubernetes Java Client代码学习——list all pods</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-05-22T08:08:00.000Z" itemprop="datePublished">2019-05-22</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2019/05/17/go-basic/" class="title">Go学习笔记——基础知识</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2019-05-17T09:32:00.000Z" itemprop="datePublished">2019-05-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
+              </p>
+              <p class="item-title">
+                <a href="/2018/09/09/%E8%8B%B1%E6%96%87%E6%A0%87%E9%A2%98/" class="title">标题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2018-09-09T05:55:00.000Z" itemprop="datePublished">2018-09-09</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2018/09/09/k8s-pod-scheduling/" class="title">Kubernetes学习笔记——Pod调度</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2018-09-09T05:55:00.000Z" itemprop="datePublished">2018-09-09</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kubernetes Java Client代码学习——list all pods" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kubernetes Java Client代码学习——list all pods
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2019/05/22/list-all-pods/" class="article-date">
+	  <time datetime="2019-05-22T08:08:00.000Z" itemprop="datePublished">2019-05-22</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>, <a class="article-tag-link" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag">学习笔记</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/05/22/list-all-pods/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.6k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 7(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>从官方提供的代码入手，”列出所有 Pod”的示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Example</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ApiException</span>&#123;</span><br><span class="line">        ApiClient client = Config.defaultClient();</span><br><span class="line">        Configuration.setDefaultApiClient(client);</span><br><span class="line"></span><br><span class="line">        CoreV1Api api = <span class="keyword">new</span> CoreV1Api();</span><br><span class="line">        V1PodList list = api.listPodForAllNamespaces(<span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">for</span> (V1Pod item : list.getItems()) &#123;</span><br><span class="line">            System.out.println(item.getMetadata().getName());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先，给出一张手绘的流程图。</p>
+<p><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1589796525746-9d58cc6b-db3d-4d7b-9f26-610e809620e4.png#align=left&display=inline&height=1183&margin=%5Bobject%20Object%5D&name=2534770445.png&originHeight=1183&originWidth=1810&size=97775&status=done&style=none&width=1810" alt="2534770445.png"></p>
+<h1 id="0x02-核心流程"><a href="#0x02-核心流程" class="headerlink" title="0x02. 核心流程"></a>0x02. 核心流程</h1><h2 id="2-1-创建-ApiClient-对象"><a href="#2-1-创建-ApiClient-对象" class="headerlink" title="2.1 创建 ApiClient 对象"></a>2.1 创建 ApiClient 对象</h2><p>首先是创建 ApiClient 对象，从 defaultClient 方法切入，它返回的是一个由 ClientBuilder 的 standard 方法创建的 ApiClient 对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ApiClient <span class="title">defaultClient</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ClientBuilder.standard().build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-1-Standard-方法"><a href="#2-1-1-Standard-方法" class="headerlink" title="2.1.1 Standard 方法"></a>2.1.1 Standard 方法</h3><p>继续追踪 ClientBuilder 中 Standard 方法的源码，代码注释显示该方法会通过四种预先配置好的方式中的一种创建一个 builder，优先度顺序如下：</p>
+<ol>
+<li>如果环境变量中 KUBECONFIG 定义过，则直接使用该配置；</li>
+<li>如果<code>$HOME/.kube/config</code>可以被找到，则使用该配置；</li>
+<li>如果<code>In-cluster Service Account</code>能被找到的话，则它就承担集群配置的功能；</li>
+<li>上述都不存在，则默认使用<code>localhost：8080</code>作为最后的方法。</li>
+</ol>
+<p>如果配置文件或者对应的配置无效的话，会抛出 ConnectException 异常。下来根据代码来验证以上的注释内容：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ClientBuilder <span class="title">standard</span><span class="params">(<span class="keyword">boolean</span> persistConfig)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  #1.首先从环境变量中找ENV_KUBECONFIG</span><br><span class="line">  <span class="keyword">final</span> File kubeConfig = findConfigFromEnv();</span><br><span class="line">  #找到则读取对应配置文件，执行对应加载过程并返回</span><br><span class="line">  <span class="keyword">if</span> (kubeConfig != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">try</span> (FileReader kubeConfigReader = <span class="keyword">new</span> FileReader(kubeConfig)) &#123;</span><br><span class="line">      KubeConfig kc = KubeConfig.loadKubeConfig(kubeConfigReader);</span><br><span class="line">      <span class="keyword">if</span> (persistConfig) &#123;</span><br><span class="line">        kc.setPersistConfig(<span class="keyword">new</span> FilePersister(kubeConfig));</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> kubeconfig(kc);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  #2.其次从Home目录找.kube/config文件</span><br><span class="line">  <span class="keyword">final</span> File config = findConfigInHomeDir();   <span class="comment">//完成目录文件路径的拼接并返回File对象</span></span><br><span class="line">  <span class="keyword">if</span> (config != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">try</span> (FileReader configReader = <span class="keyword">new</span> FileReader(config)) &#123;</span><br><span class="line">      KubeConfig kc = KubeConfig.loadKubeConfig(configReader);</span><br><span class="line">      <span class="keyword">if</span> (persistConfig) &#123;</span><br><span class="line">        kc.setPersistConfig(<span class="keyword">new</span> FilePersister(config));</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> kubeconfig(kc);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  #3.采用集群内ServiceCount方式配置，这里传入的是SC对应的证书文件路径</span><br><span class="line">  <span class="keyword">final</span> File clusterCa = <span class="keyword">new</span> File(SERVICEACCOUNT_CA_PATH);</span><br><span class="line">  <span class="keyword">if</span> (clusterCa.exists()) &#123;</span><br><span class="line">    <span class="keyword">return</span> cluster();</span><br><span class="line">  &#125;</span><br><span class="line">  #4.上述方式无效则使用默认构造器方法创建一个实例，实例中DEFAULT_FALLBACK_HOST指定的就是http://localhost:8080</span><br><span class="line">  # private String basePath = Config.DEFAULT_FALLBACK_HOST;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> ClientBuilder();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到代码中实现与注释一一对应，在第一二种配置方式中，核心的方法主要有 KubeConfig 的 loadKubeConfig 和 setPersistConfig 两个方法。从字面上来看，前者主要负责配置加载，而后者则是对于 PersistConfig 的设置，具体是什么后面再看。</p>
+<p>首先分析 loadKubeConfig 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> KubeConfig <span class="title">loadKubeConfig</span><span class="params">(Reader input)</span> </span>&#123;</span><br><span class="line">  #可以看到这里将输入读取为一个yaml对象，</span><br><span class="line">  Yaml yaml = <span class="keyword">new</span> Yaml(<span class="keyword">new</span> SafeConstructor());</span><br><span class="line">  Object config = yaml.load(input);</span><br><span class="line">  #然后将yaml形式的config对象转化为Map</span><br><span class="line">  Map&lt;String, Object&gt; configMap = (Map&lt;String, Object&gt;) config;</span><br><span class="line"></span><br><span class="line">  #通过转化为的map取出对应的五个值</span><br><span class="line">  String currentContext = (String) configMap.get(<span class="string">"current-context"</span>);</span><br><span class="line">  ArrayList&lt;Object&gt; contexts = (ArrayList&lt;Object&gt;) configMap.get(<span class="string">"contexts"</span>);</span><br><span class="line">  ArrayList&lt;Object&gt; clusters = (ArrayList&lt;Object&gt;) configMap.get(<span class="string">"clusters"</span>);</span><br><span class="line">  ArrayList&lt;Object&gt; users = (ArrayList&lt;Object&gt;) configMap.get(<span class="string">"users"</span>);</span><br><span class="line">  Object preferences = configMap.get(<span class="string">"preferences"</span>);</span><br><span class="line"></span><br><span class="line">  #将取出来的值装配到kubeconfig对象里，最后返回</span><br><span class="line">  KubeConfig kubeConfig = <span class="keyword">new</span> KubeConfig(contexts, clusters, users);</span><br><span class="line">  kubeConfig.setContext(currentContext);</span><br><span class="line">  kubeConfig.setPreferences(preferences);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> kubeConfig;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从 KubeConfig 类的变量声明能看到一些额外的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 找到kubeconfig文件的默认地址相关字段</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String ENV_HOME = <span class="string">"HOME"</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String KUBEDIR = <span class="string">".kube"</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String KUBECONFIG = <span class="string">"config"</span>;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Authenticator&gt; authenticators = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 作者留下的注释</span></span><br><span class="line"><span class="comment">//“致读者：我曾考虑过不使用多个Map，而是创建一个config对象并解析，但是使用多个Map要比一堆样板类更加清晰易懂”</span></span><br><span class="line"><span class="keyword">private</span> ArrayList&lt;Object&gt; clusters;</span><br><span class="line"><span class="keyword">private</span> ArrayList&lt;Object&gt; contexts;</span><br><span class="line"><span class="keyword">private</span> ArrayList&lt;Object&gt; users;</span><br><span class="line">String currentContextName;</span><br><span class="line">Map&lt;String, Object&gt; currentContext;</span><br><span class="line">Map&lt;String, Object&gt; currentCluster;</span><br><span class="line">Map&lt;String, Object&gt; currentUser;</span><br><span class="line">String currentNamespace;</span><br><span class="line">Object preferences;</span><br><span class="line">ConfigPersister persister;</span><br></pre></td></tr></table></figure>
+
+<p>standard 方法中，在执行完 loadKubeConfig 对象之后，会对传入的 persistConfig 标志位进行判断，如果为 true，则执行 setPersistConfig 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (persistConfig) &#123;</span><br><span class="line">  kc.setPersistConfig(<span class="keyword">new</span> FilePersister(kubeConfig));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而 FilePersister 是 ConfigPersister 接口的一个具体实现，该接口仅有一个 save 方法，应当是将配置持久化的方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ConfigPersister</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">save</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      ArrayList&lt;Object&gt; contexts,</span></span></span><br><span class="line"><span class="function"><span class="params">      ArrayList&lt;Object&gt; clusters,</span></span></span><br><span class="line"><span class="function"><span class="params">      ArrayList&lt;Object&gt; users,</span></span></span><br><span class="line"><span class="function"><span class="params">      Object preferences,</span></span></span><br><span class="line"><span class="function"><span class="params">      String currentContext)</span></span></span><br><span class="line"><span class="function">      <span class="keyword">throws</span> IOException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>standard 方法最后的执行过程是 kubeconfig 方法，方法的注释说明该方法用于从一个预配置好的 KubeConfig 对象中创建 builder，具体源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ClientBuilder <span class="title">kubeconfig</span><span class="params">(KubeConfig config)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> ClientBuilder builder = <span class="keyword">new</span> ClientBuilder();</span><br><span class="line"></span><br><span class="line">  #拼装server字段</span><br><span class="line">  String server = config.getServer();</span><br><span class="line">  <span class="keyword">if</span> (!server.contains(<span class="string">"://"</span>)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (server.contains(<span class="string">":443"</span>)) &#123;</span><br><span class="line">      server = <span class="string">"https://"</span> + server;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      server = <span class="string">"http://"</span> + server;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  #根据证书取出KubeConfig的数据或者文件</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">byte</span>[] caBytes =</span><br><span class="line">      KubeConfig.getDataOrFile(</span><br><span class="line">          config.getCertificateAuthorityData(), config.getCertificateAuthorityFile());</span><br><span class="line">  #将kubeconfig对应的数据取出来填充进builder对象中</span><br><span class="line">  <span class="keyword">if</span> (caBytes != <span class="keyword">null</span>) &#123;</span><br><span class="line">    builder.setCertificateAuthority(caBytes);</span><br><span class="line">  &#125;</span><br><span class="line">  builder.setVerifyingSsl(config.verifySSL());</span><br><span class="line"></span><br><span class="line">  builder.setBasePath(server);</span><br><span class="line">  builder.setAuthentication(<span class="keyword">new</span> KubeconfigAuthentication(config));</span><br><span class="line">  <span class="keyword">return</span> builder;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-2-Build-方法"><a href="#2-1-2-Build-方法" class="headerlink" title="2.1.2 Build 方法"></a>2.1.2 Build 方法</h3><p>经历以上过程，终于 standard 方法执行完毕并返回了一个包含各种认证鉴权相关信息的 builder 对象，接下来看看 build 方法的实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ApiClient <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> ApiClient client = <span class="keyword">new</span> ApiClient();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (basePath != <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (basePath.endsWith(<span class="string">"/"</span>)) &#123;</span><br><span class="line">      basePath = basePath.substring(<span class="number">0</span>, basePath.length() - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    client.setBasePath(basePath);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  client.setVerifyingSsl(verifyingSsl);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (authentication != <span class="keyword">null</span>) &#123;</span><br><span class="line">    authentication.provide(client);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//上述顺序很重要，因为一旦SSL信息更改，API客户端就会重新评估CA证书。这意味着如果上述流程发生在下面这个调用的后面，在尝试加载证书时，很可能会调用的InputStream已经耗尽。 因此，设置CA证书的顺序必须位于最后。</span></span><br><span class="line">  <span class="keyword">if</span> (caCertBytes != <span class="keyword">null</span>) &#123;</span><br><span class="line">    client.setSslCaCert(<span class="keyword">new</span> ByteArrayInputStream(caCertBytes));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> client;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-剩余工作"><a href="#2-2-剩余工作" class="headerlink" title="2.2 剩余工作"></a>2.2 剩余工作</h2><p>经历以上步骤，终于完成了 ApiClient 复杂的创建过程。继续看看看看剩余工作，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#创建client对象</span><br><span class="line">ApiClient client = Config.defaultClient();</span><br><span class="line"></span><br><span class="line">#将client对象传入到Configuration类的类静态变量中</span><br><span class="line">Configuration.setDefaultApiClient(client);</span><br><span class="line"></span><br><span class="line">#CoreV1Api无参构造方法调用重载的带apiClient参数的构造方法，从Configuration类中取出client对象完成构造</span><br><span class="line">CoreV1Api api = <span class="keyword">new</span> CoreV1Api();</span><br><span class="line"></span><br><span class="line">#获得CoreV1Api对象后，填充参数执行对应的查询方法</span><br><span class="line">V1PodList list = api.listPodForAllNamespaces(<span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br></pre></td></tr></table></figure>
+
+<h1 id="0x03-总结流程"><a href="#0x03-总结流程" class="headerlink" title="0x03. 总结流程"></a>0x03. 总结流程</h1><p>经历以上的分析过程，大致完成了 list pods 的流程分析。结合 K8S 官方的概念流程文档可以验证之前学习的基于 API Server 的安全机制流程，可以看到 Authentication 和 Authorization 部分的数据填充过程。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2019/05/22/list-all-pods/" title="Kubernetes Java Client代码学习——list all pods" target="_blank" rel="external">https://study4.fun/2019/05/22/list-all-pods/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2020/01/01/2019-comments/" title="2019的闲言碎语"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2019/05/17/go-basic/" title="Go学习笔记——基础知识"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2020 Mii Wang
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: '165b9a4f859500042709',
+    clientSecret: '4af45adbac4941cdd0612094d67b828f1591c351',
+    repo: 'gitalk',
+    owner: 'MiiW',
+    admin: ['MiiW'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+
+
+</body>
+</html>
