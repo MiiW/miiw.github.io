@@ -1,6 +1,7 @@
 https://study4.fun/2020/05/25/clean-coder-notes/
 https://study4.fun/2020/01/01/2019-comments/
 https://study4.fun/2019/09/03/desired-state-of-world-populator/
+https://study4.fun/2019/08/29/dpfcds-notes/
 https://study4.fun/2019/05/22/list-all-pods/
 https://study4.fun/2019/05/17/go-basic/
 https://study4.fun/2019/04/25/k8s-api-server-security/
