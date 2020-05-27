@@ -16,6 +16,8 @@
   <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
   <meta http-equiv="window-target" content="_top" />
   
+  <meta name="google-site-verification" content="google804f351405bb1315" />
+  
   
   <title>Kubernetes学习笔记——Pod调度 | 学而时习之</title>
   <meta name="description" content="0x01. Deployment&#x2F;RC 全自动调度效果：在集群内始终维持用户指定的副本数量 使用：spec.replicas 原理：系统自动调度算法。由 Master 的 Scheduler 经过一系列算法计算得出，用户无法干预调度过程和结果。 0x02. NodeSelector效果：通过 Node 的标签和 Pod 的 nodeSelector 属性进行匹配，将 Pod 调度到指定的 Node">
@@ -26,7 +28,7 @@
 <meta property="og:description" content="0x01. Deployment&#x2F;RC 全自动调度效果：在集群内始终维持用户指定的副本数量 使用：spec.replicas 原理：系统自动调度算法。由 Master 的 Scheduler 经过一系列算法计算得出，用户无法干预调度过程和结果。 0x02. NodeSelector效果：通过 Node 的标签和 Pod 的 nodeSelector 属性进行匹配，将 Pod 调度到指定的 Node">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2018-09-09T05:55:00.000Z">
-<meta property="article:modified_time" content="2020-05-27T03:24:14.508Z">
+<meta property="article:modified_time" content="2020-05-27T04:12:19.059Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="学习笔记">
 <meta property="article:tag" content="Kubernetes">
@@ -646,6 +648,17 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+    <script defer type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-167751203-1', 'auto');
+ga('send', 'pageview');
+
+</script>
 
 
 

@@ -16,6 +16,8 @@
   <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
   <meta http-equiv="window-target" content="_top" />
   
+  <meta name="google-site-verification" content="google804f351405bb1315" />
+  
   
   <title>Kubernetes学习笔记——基于API Server的安全机制浅析 | 学而时习之</title>
   <meta name="description" content="文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。 集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost P">
@@ -27,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267">
 <meta property="article:published_time" content="2019-04-25T02:50:00.000Z">
-<meta property="article:modified_time" content="2020-05-27T03:24:14.368Z">
+<meta property="article:modified_time" content="2020-05-27T04:12:18.887Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="Kubernetes">
 <meta property="article:tag" content="API Server">
@@ -637,6 +639,17 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+    <script defer type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-167751203-1', 'auto');
+ga('send', 'pageview');
+
+</script>
 
 
 
