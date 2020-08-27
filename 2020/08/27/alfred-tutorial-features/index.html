@@ -19,24 +19,30 @@
   <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
   
   
-  <title>Kubernetes学习笔记——基于API Server的安全机制浅析 | 学而时习之</title>
-  <meta name="description" content="文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。 集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost P">
+  <title>Alfred使用不完全教程——Features | 学而时习之</title>
+  <meta name="description" content="0. 引言Alfred 是什么？用了 Alfred 有什么好处？对我而言，触控板在进行操作时，大部分时间都用于“离开键盘+移动至触控板+目光搜索+调整点击”，重复的次数越多，越觉得浪费的时间越多。因此，Alfred 这种能够将操作映射或转换至键盘的工具便是效率提升的最佳选择。类似的问题就不再赘述，本篇只提供一个我入手并学习使用 Alfred 的过程并记录下来，作为一个教程分享给大家。 1. 关于">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Kubernetes学习笔记——基于API Server的安全机制浅析">
-<meta property="og:url" content="https://study4.fun/2019/04/25/k8s-api-server-security/">
+<meta property="og:title" content="Alfred使用不完全教程——Features">
+<meta property="og:url" content="https://study4.fun/2020/08/27/alfred-tutorial-features/">
 <meta property="og:site_name" content="Study4Fun">
-<meta property="og:description" content="文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。 集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost P">
+<meta property="og:description" content="0. 引言Alfred 是什么？用了 Alfred 有什么好处？对我而言，触控板在进行操作时，大部分时间都用于“离开键盘+移动至触控板+目光搜索+调整点击”，重复的次数越多，越觉得浪费的时间越多。因此，Alfred 这种能够将操作映射或转换至键盘的工具便是效率提升的最佳选择。类似的问题就不再赘述，本篇只提供一个我入手并学习使用 Alfred 的过程并记录下来，作为一个教程分享给大家。 1. 关于">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267">
-<meta property="article:published_time" content="2019-04-25T02:50:00.000Z">
-<meta property="article:modified_time" content="2020-08-27T16:37:18.619Z">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598544028641-4e7fa8fe-bf2a-4ae5-8585-efd28147f179.png#align=left&display=inline&height=760&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1520&originWidth=2360&size=618648&status=done&style=none&width=1180">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598544081208-0dc163c8-19ac-4255-8e64-1ec813f1c2bb.png#align=left&display=inline&height=222&margin=%5Bobject%20Object%5D&name=image.png&originHeight=444&originWidth=844&size=561325&status=done&style=none&width=422">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598546143051-6c698370-9a7f-417f-9c25-b8492d9f0823.png#align=left&display=inline&height=109&margin=%5Bobject%20Object%5D&name=image.png&originHeight=218&originWidth=1118&size=78362&status=done&style=none&width=559">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598546158757-69baf665-719d-464d-8676-415a0bdab610.png#align=left&display=inline&height=201&margin=%5Bobject%20Object%5D&name=image.png&originHeight=402&originWidth=1118&size=192848&status=done&style=none&width=559">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545325931-96ea7580-6774-4d37-9111-6d91f5c84648.png#align=left&display=inline&height=109&margin=%5Bobject%20Object%5D&name=image.png&originHeight=218&originWidth=1118&size=75769&status=done&style=none&width=559">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545644184-e99e0301-8750-4d39-b899-93dadfd1ce72.png#align=left&display=inline&height=63&margin=%5Bobject%20Object%5D&name=image.png&originHeight=126&originWidth=1254&size=113138&status=done&style=none&width=627">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545775738-10c8752f-1e7c-4fb5-9b07-fe3aa1827db7.png#align=left&display=inline&height=247&margin=%5Bobject%20Object%5D&name=image.png&originHeight=494&originWidth=1118&size=286368&status=done&style=none&width=559">
+<meta property="article:published_time" content="2020-08-27T15:20:00.000Z">
+<meta property="article:modified_time" content="2020-08-27T16:37:18.199Z">
 <meta property="article:author" content="Mii Wang">
-<meta property="article:tag" content="Kubernetes">
-<meta property="article:tag" content="API Server">
+<meta property="article:tag" content="Alfred">
+<meta property="article:tag" content="教程">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/png/379285/1598544028641-4e7fa8fe-bf2a-4ae5-8585-efd28147f179.png#align=left&display=inline&height=760&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1520&originWidth=2360&size=618648&status=done&style=none&width=1180">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://study4.fun/2019/04/25/k8s-api-server-security/index.html">
+  <link rel="canonical" href="https://study4.fun/2020/08/27/alfred-tutorial-features/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
   
@@ -328,14 +334,14 @@
 <meta name="referrer" content="no-referrer" />
 <main class="main" role="main">
   <div class="content">
-  <article id="post-Kubernetes学习笔记——基于API Server的安全机制浅析" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-【更新中】Alfred使用不完全教程——Features" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      Kubernetes学习笔记——基于API Server的安全机制浅析
+      Alfred使用不完全教程——Features
     </h1>
   
 
@@ -343,20 +349,20 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2019/04/25/k8s-api-server-security/" class="article-date">
-	  <time datetime="2019-04-25T02:50:00.000Z" itemprop="datePublished">2019-04-25</time>
+	<a href="/2020/08/27/alfred-tutorial-features/" class="article-date">
+	  <time datetime="2020-08-27T15:20:00.000Z" itemprop="datePublished">2020-08-27</time>
 	</a>
 </span>
         
   <span class="article-category">
     <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    <a class="article-category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
   </span>
 
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/API-Server/" rel="tag">API Server</a>, <a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
+	<a class="article-tag-link" href="/tags/Alfred/" rel="tag">Alfred</a>, <a class="article-tag-link" href="/tags/%E6%95%99%E7%A8%8B/" rel="tag">教程</a>
   </span>
 
 
@@ -364,102 +370,31 @@
 
 	<span class="article-read hidden-xs">
     	<i class="icon icon-eye-fill" aria-hidden="true"></i>
-    	<span id="/2019/04/25/k8s-api-server-security/" class="leancloud_visitors"  data-flag-title="Kubernetes学习笔记——基于API Server的安全机制浅析">0</span>
+    	<span id="/2020/08/27/alfred-tutorial-features/" class="leancloud_visitors"  data-flag-title="Alfred使用不完全教程——Features">0</span>
     </span>
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/04/25/k8s-api-server-security/#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/08/27/alfred-tutorial-features/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.4k(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 770(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 2(分)</span>
 	
 
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <p>文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。</p>
-<h1 id="集群安全机制的目标"><a href="#集群安全机制的目标" class="headerlink" title="集群安全机制的目标"></a>集群安全机制的目标</h1><ul>
-<li>隔离性，限制容器给集群带来的副作用</li>
-<li>最小权限原则</li>
-<li>组件的边界划分需要明确</li>
-<li>角色划分和权限分配</li>
-</ul>
-<h1 id="关于-API-Server"><a href="#关于-API-Server" class="headerlink" title="关于 API Server"></a>关于 API Server</h1><p>API Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost Por)和安全端口(Secure Port)。</p>
-<table>
-<thead>
-<tr>
-<th align="center"></th>
-<th align="center">本地端口</th>
-<th align="center">安全端口</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">使用场景</td>
-<td align="center">测试和启动时使用，Master 节点中不同组件通信</td>
-<td align="center">任意场景</td>
-</tr>
-<tr>
-<td align="center">安全协议</td>
-<td align="center">无</td>
-<td align="center">TLS</td>
-</tr>
-<tr>
-<td align="center">端口</td>
-<td align="center">默认 8080，<code>insecure-port</code>修改</td>
-<td align="center">默认 6443，<code>secure-port</code>修改</td>
-</tr>
-<tr>
-<td align="center">IP</td>
-<td align="center">默认 localhost, <code>insecure-bind-address</code>修改</td>
-<td align="center">默认为第一个非 localhost 网卡地址，<code>bind-address</code>修改</td>
-</tr>
-<tr>
-<td align="center">处理流程</td>
-<td align="center">无需认证和授权</td>
-<td align="center">需要认证和授权</td>
-</tr>
-<tr>
-<td align="center">准入控制</td>
-<td align="center">是</td>
-<td align="center">是</td>
-</tr>
-<tr>
-<td align="center">访问控制</td>
-<td align="center">需要拥有主机访问权限</td>
-<td align="center">需要认证和授权模块正常运行</td>
-</tr>
-</tbody></table>
-<p>注：TLS 中，证书和私钥相关参数为<code>tls-cert-file</code> 和 <code>tls-private-key-file</code>。<br>访问 API Server 的方式有 kubectl，客户端的库和 Rest 请求。通常来说，想在外部访问 API Server 需要通过安全端口访问。通过安全端口访问需要经过三重校验，即 Authentication（身份认证），Authorization（授权）和 Admission Control（准入控制）。<br><img src="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267" alt=""></p>
-<h1 id="Authentication（身份认证）"><a href="#Authentication（身份认证）" class="headerlink" title="Authentication（身份认证）"></a>Authentication（身份认证）</h1><blockquote>
-<p><strong>Authentication</strong> is the act of confirming the truth of an attribute of a single piece of data claimed true by an entity.<br>From: <a href="https://en.wikipedia.org/wiki/Authentication" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authentication</a><br>通俗的来说，身份认证解决的是“让系统/服务端知道你是谁”的问题，即对用户身份的确认。值得注意的是，Wikipedia 中还特别标注“ <em>Not to be confused with authorization.</em> ”<br>对于身份的认证，现实生活中可能是查验证件，也可能是对暗号。</p>
-</blockquote>
-<p>对应的，在 Kubernetes 中，也有对应的几种客户端身份认证方式：</p>
-<ul>
-<li>证书认证：基于 CA 根证书签名的双向数字证书认证方式；</li>
-<li>Token 认证：通过 Token 来认证；</li>
-<li>用户密码：通过用户密码的方式认证；</li>
-</ul>
-<p>可以同时指定多个身份认证模块，在流程中将会以顺序执行的方式进行认证过程，直到其中一个认证模块认证成功。如果请求认证失败，则会返回 401 状态码。（PS：这里引入了一个 401 状态码的历史遗留问题——401 的语义其实应该是 Unauthenticated）</p>
-<p>一旦认证成功，用户就会被分配一个特定的 username。在随后的访问控制流程中，这个 username 将会一直使用。尽管如此，这个 username 却也不会对应存在一个真实的<strong>用户对象</strong>，该信息也不会被存储。</p>
-<p>（我的理解：这个所谓的 username 的存在仅仅是为了在整个访问控制流程中能够进行上下文信息的传递，完成一个链式的验证。和传统意义上的用户相比，K8S 的访问控制基于单次的请求，在请求的过程中抽象来决定行为的合法性和有效性。）</p>
-<h1 id="Authorization（授权）"><a href="#Authorization（授权）" class="headerlink" title="Authorization（授权）"></a>Authorization（授权）</h1><blockquote>
-<p><strong>Authorization</strong> is the function of specifying access rights/privileges to resources, which is related to information security and computer security in general and to access control in particular.<br>From: <a href="https://en.wikipedia.org/wiki/Authorization" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authorization</a><br>与身份认证不同的是，授权关注的是对资源的访问控制，通俗的说就是“系统要知道你这个身份能够做什么”。</p>
-</blockquote>
-<p>当请求通过了身份认证之后，请求才会进入授权流程。请求的内容包含三个部分：用户名（username of the requester），动作（ requested action），动作影响的对象（the object affected by the action）。在已有的多种授权策略中，只要有一个能够声明此用户有执行对应动作的权限，则请求就被授权成功。若所有授权策略全部失败，则返回 403 状态码。<br>授权模块的种类：</p>
-<ul>
-<li>ABAC</li>
-<li>RBAC</li>
-<li>Node</li>
-<li>Webhook</li>
-</ul>
-<h1 id="Admission-Control（准入控制）"><a href="#Admission-Control（准入控制）" class="headerlink" title="Admission Control（准入控制）"></a>Admission Control（准入控制）</h1><p>通过认证和授权流程之后，请求的调用还需要通过准入控制链的检查。与上述模块不同，准入控制能够修改请求参数完成一些任务。<br>当多个准入控制模块配置完毕后，请求的调用会依次按顺序进行检查。一旦任意一个准入控制模块检查不通过，则请求立即被拒绝。而请求完成了所有检查后，会采用相应 API 对象的验证流程对请求进行验证，然后写入对象库。</p>
-<blockquote>
-<p>Once a request passes all admission controllers, it is validated using the validation routines for the corresponding API object, and then written to the object store (shown as step <strong>4</strong>).</p>
-</blockquote>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>从整体来看，Kubernetes 对于 API Server 的请求主要分为两大部分：内部和外部。<br>内部是指在 master 节点使用 kubectl 命令进行操作，这时，因为是在节点内部操作，因此并不会使用安全端口，直接采用 localhost 这个 ip 上的非安全端口进行访问。<br>而对于 API Server 的外部请求调用（包括 Pod 和 Rest 请求），则需要使用安全端口进行访问。通过安全端口的请求，需要进行严格的三层校验才能调用成功。这就通过确保只执行权限内允许的操作保证了集群操作的安全性。<br>关于每个部分的详细介绍，会单独抽成三部分继续分解。</p>
+        <h1 id="0-引言"><a href="#0-引言" class="headerlink" title="0. 引言"></a>0. 引言</h1><p>Alfred 是什么？用了 Alfred 有什么好处？<br>对我而言，触控板在进行操作时，大部分时间都用于“离开键盘+移动至触控板+目光搜索+调整点击”，重复的次数越多，越觉得浪费的时间越多。因此，Alfred 这种能够将操作映射或转换至键盘的工具便是效率提升的最佳选择。<br>类似的问题就不再赘述，本篇只提供一个我入手并学习使用 Alfred 的过程并记录下来，<del>作为一个教程</del>分享给大家。</p>
+<h1 id="1-关于-Features"><a href="#1-关于-Features" class="headerlink" title="1. 关于 Features"></a>1. 关于 Features</h1><p>Features 在我看来是 Alfred 为免费版或者说小白用户提供的使用频次最高的功能集合，同时包括了一些软件的基础设置。注意，部分 feature 需要激活 Powerpack，接下来依次介绍一下。</p>
+<h2 id="1-1-Default-Results"><a href="#1-1-Default-Results" class="headerlink" title="1.1 Default Results"></a>1.1 Default Results</h2><p>Default Results 主要设置的是 Alfred 在默认状况下的搜索结果，以及搜索源。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598544028641-4e7fa8fe-bf2a-4ae5-8585-efd28147f179.png#align=left&display=inline&height=760&margin=%5Bobject%20Object%5D&name=image.png&originHeight=1520&originWidth=2360&size=618648&status=done&style=none&width=1180" alt="image.png"></p>
+<h3 id="1-1-1-Applications"><a href="#1-1-1-Applications" class="headerlink" title="1.1.1 Applications"></a>1.1.1 Applications</h3><p>打开 Applications，选项为 <strong>Apps Matching *<em>和 *</em>Match Application’s keyworkds in default results</strong>。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598544081208-0dc163c8-19ac-4255-8e64-1ec813f1c2bb.png#align=left&display=inline&height=222&margin=%5Bobject%20Object%5D&name=image.png&originHeight=444&originWidth=844&size=561325&status=done&style=none&width=422" alt="image.png"></p>
+<h4 id="1-Apps-Matching"><a href="#1-Apps-Matching" class="headerlink" title="1. Apps Matching"></a>1. Apps Matching</h4><p><strong>Apps Matching</strong>控制了搜索 <strong>应用 **时的匹配规则，包含</strong>Fuzzy capital letters** 和** Full fuzzy match from word boundary，<strong>建议设置为默认的 **Fuzzy capital letters 。</strong><br><strong>Fuzzy capital letters *<em>指只会匹配应用完整名字的首字母，以减少干扰。<br>*</em>Full fuzzy match from word boundary</strong> 指匹配应用名称内任意顺序的字母组合。<br>以 Visual Studio Code 为例，当设置为 *<em>Fuzzy capital letters *</em>时，只有输入 vsc 的过程中可以检索到该应用，而 vsco 则不行。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598546143051-6c698370-9a7f-417f-9c25-b8492d9f0823.png#align=left&display=inline&height=109&margin=%5Bobject%20Object%5D&name=image.png&originHeight=218&originWidth=1118&size=78362&status=done&style=none&width=559" alt="image.png"><br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598546158757-69baf665-719d-464d-8676-415a0bdab610.png#align=left&display=inline&height=201&margin=%5Bobject%20Object%5D&name=image.png&originHeight=402&originWidth=1118&size=192848&status=done&style=none&width=559" alt="image.png"><br>反之，设置为 *<em>Full fuzzy match from word boundary *</em>时，输入类似 vis/vst/vsoc 等 **”Visual Studio Code” **的顺序子串时，都可以搜索到该程序。干扰过大，因此建议选择默认。</p>
+<h4 id="2-Match-Applicaiton’s-keywords-in-default-results"><a href="#2-Match-Applicaiton’s-keywords-in-default-results" class="headerlink" title="2. Match Applicaiton’s keywords in default results"></a>2. Match Applicaiton’s keywords in default results</h4><p>由于某些应用程序会有相关的元信息存在，开启此选项会对一应用程序的元信息同时进行搜索。</p>
+<h3 id="1-1-2-Essentials-Extras-Unintelligent"><a href="#1-1-2-Essentials-Extras-Unintelligent" class="headerlink" title="1.1.2 Essentials/Extras/Unintelligent"></a>1.1.2 Essentials/Extras/Unintelligent</h3><p>这两行选项主要设置了搜索的目标。Essentials 中，Preferences 指系统设置，Contacts 指通讯录。<br>Extras 则是指搜索结果显示的文件类型。如建议所言，建议只开启 Essentials 中的设置，如果需要搜索文件/文件夹，可以使用 <strong>open **关键词进行搜索。此外，调出 Alfred 后，</strong>单击一次空格键（或者输入’）<strong>也可以进入文件搜索模式。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545325931-96ea7580-6774-4d37-9111-6d91f5c84648.png#align=left&display=inline&height=109&margin=%5Bobject%20Object%5D&name=image.png&originHeight=218&originWidth=1118&size=75769&status=done&style=none&width=559" alt="image.png"><br>Unintelligent 选项会搜索所有类型的文件，开启后会大大拖慢默认搜索的速度，建议使用 **open</strong> 或者 *<em>find *</em>命令进行文件相关的搜索。</p>
+<h3 id="1-1-3-Search-Scope"><a href="#1-1-3-Search-Scope" class="headerlink" title="1.1.3 Search Scope"></a>1.1.3 Search Scope</h3><p>Search Scope 定义了搜索的目标文件夹范围，可根据自己的需求添加或者删除。</p>
+<h3 id="1-1-4-Fallbacks"><a href="#1-1-4-Fallbacks" class="headerlink" title="1.1.4 Fallbacks"></a>1.1.4 Fallbacks</h3><p><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545644184-e99e0301-8750-4d39-b899-93dadfd1ce72.png#align=left&display=inline&height=63&margin=%5Bobject%20Object%5D&name=image.png&originHeight=126&originWidth=1254&size=113138&status=done&style=none&width=627" alt="image.png"><br>Fallbacks 设定为 Only 时，只有搜索不到目标时才会列出默认的搜索项。设置为 Intelligently 时，默认的搜索相会始终出现在搜索结果末尾。<br><img src="https://cdn.nlark.com/yuque/0/2020/png/379285/1598545775738-10c8752f-1e7c-4fb5-9b07-fe3aa1827db7.png#align=left&display=inline&height=247&margin=%5Bobject%20Object%5D&name=image.png&originHeight=494&originWidth=1118&size=286368&status=done&style=none&width=559" alt="image.png"><br>*<em>Setup fallback results *</em>设定了默认的搜索项。当前版本中，可添加的默认搜索项都为 Web Search。关于 Web Search，会在后面介绍。</p>
 
       
     </div>
@@ -469,7 +404,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://study4.fun/2019/04/25/k8s-api-server-security/" title="Kubernetes学习笔记——基于API Server的安全机制浅析" target="_blank" rel="external">https://study4.fun/2019/04/25/k8s-api-server-security/</a>
+      <a href="https://study4.fun/2020/08/27/alfred-tutorial-features/" title="Alfred使用不完全教程——Features" target="_blank" rel="external">https://study4.fun/2020/08/27/alfred-tutorial-features/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -515,13 +450,9 @@
   
   <ul class="pager pull-left">
     
-    <li class="prev">
-      <a href="/2019/05/17/go-basic/" title="Go学习笔记——基础知识"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
     
     <li class="next">
-      <a href="/2018/09/09/k8s-pod-scheduling/" title="Kubernetes学习笔记——Pod调度"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/2020/08/15/apue-readling-notes-1/" title="APUE读书笔记（一）"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
     

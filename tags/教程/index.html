@@ -19,24 +19,16 @@
   <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
   
   
-  <title>Kubernetes学习笔记——基于API Server的安全机制浅析 | 学而时习之</title>
-  <meta name="description" content="文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。 集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost P">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Kubernetes学习笔记——基于API Server的安全机制浅析">
-<meta property="og:url" content="https://study4.fun/2019/04/25/k8s-api-server-security/">
+  <title>标签: 教程 | 学而时习之</title>
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Study4Fun">
+<meta property="og:url" content="https://study4.fun/tags/%E6%95%99%E7%A8%8B/">
 <meta property="og:site_name" content="Study4Fun">
-<meta property="og:description" content="文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。 集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost P">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267">
-<meta property="article:published_time" content="2019-04-25T02:50:00.000Z">
-<meta property="article:modified_time" content="2020-08-27T16:37:18.619Z">
 <meta property="article:author" content="Mii Wang">
-<meta property="article:tag" content="Kubernetes">
-<meta property="article:tag" content="API Server">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://study4.fun/2019/04/25/k8s-api-server-security/index.html">
+  <link rel="canonical" href="https://study4.fun/tags/%E6%95%99%E7%A8%8B/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
   
@@ -324,221 +316,82 @@
 </aside>
 
   
-  
-<meta name="referrer" content="no-referrer" />
-<main class="main" role="main">
-  <div class="content">
-  <article id="post-Kubernetes学习笔记——基于API Server的安全机制浅析" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <main class="main" role="main">
+  <article class="content article article-tags post-type-list" itemscope="">
+    <header class="article-header">
+      <h1 itemprop="name" class="hidden-xs">标签: 教程</h1>
+      <p class="text-muted hidden-xs">共 1 篇文章</p>
+      <nav role="navigation" id="nav-main" class="okayNav">
+        <ul>
+          <li><a href="/tags">All</a></li>
+          
+          <li><a href="/tags/杂项/">杂项</a></li>
+          
+          <li><a href="/tags/读书笔记/">读书笔记</a></li>
+          
+          <li><a href="/tags/Unix/">Unix</a></li>
+          
+          <li><a href="/tags/Golang/">Golang</a></li>
+          
+          <li><a href="/tags/学习笔记/">学习笔记</a></li>
+          
+          <li><a href="/tags/Kubernetes/">Kubernetes</a></li>
+          
+          <li><a href="/tags/Pod/">Pod</a></li>
+          
+          <li><a href="/tags/API-Server/">API Server</a></li>
+          
+          <li><a href="/tags/容器/">容器</a></li>
+          
+          <li><a href="/tags/设计模式/">设计模式</a></li>
+          
+          <li><a href="/tags/Alfred/">Alfred</a></li>
+          
+          <li><a href="/tags/教程/">教程</a></li>
+          
+          <li><a href="/tags/网络配置/">网络配置</a></li>
+          
+          <li><a href="/tags/IPV6/">IPV6</a></li>
+          
+          <li><a href="/tags/DNS/">DNS</a></li>
+          
+        </ul>
+      </nav>
+    </header>
+    <!-- /header -->
+    <div class="article-body">
+      <div class="row">
+        
+<div class="col-md-6">
     
-    <div class="article-header">
-      
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Kubernetes学习笔记——基于API Server的安全机制浅析
-    </h1>
-  
-
-      
-      <div class="article-meta">
-        <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/2019/04/25/k8s-api-server-security/" class="article-date">
-	  <time datetime="2019-04-25T02:50:00.000Z" itemprop="datePublished">2019-04-25</time>
-	</a>
-</span>
-        
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
-  </span>
-
-        
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/API-Server/" rel="tag">API Server</a>, <a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
-  </span>
-
-
-        
-
-	<span class="article-read hidden-xs">
-    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
-    	<span id="/2019/04/25/k8s-api-server-security/" class="leancloud_visitors"  data-flag-title="Kubernetes学习笔记——基于API Server的安全机制浅析">0</span>
-    </span>
-
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/04/25/k8s-api-server-security/#comments" class="article-comment-link">评论</a></span>
-        
-	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.4k(字)</span>
-	
-	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
-	
-
-      </div>
-    </div>
-    <div class="article-entry marked-body" itemprop="articleBody">
-      
-        <p>文章基于《Kubernetes 权威指南》和官方 v1.13 英文文档整理，整体书写基于笔者对 v1.13.3 版本集群的学习理解，如果谬误，欢迎指正。</p>
-<h1 id="集群安全机制的目标"><a href="#集群安全机制的目标" class="headerlink" title="集群安全机制的目标"></a>集群安全机制的目标</h1><ul>
-<li>隔离性，限制容器给集群带来的副作用</li>
-<li>最小权限原则</li>
-<li>组件的边界划分需要明确</li>
-<li>角色划分和权限分配</li>
-</ul>
-<h1 id="关于-API-Server"><a href="#关于-API-Server" class="headerlink" title="关于 API Server"></a>关于 API Server</h1><p>API Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost Por)和安全端口(Secure Port)。</p>
-<table>
-<thead>
-<tr>
-<th align="center"></th>
-<th align="center">本地端口</th>
-<th align="center">安全端口</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">使用场景</td>
-<td align="center">测试和启动时使用，Master 节点中不同组件通信</td>
-<td align="center">任意场景</td>
-</tr>
-<tr>
-<td align="center">安全协议</td>
-<td align="center">无</td>
-<td align="center">TLS</td>
-</tr>
-<tr>
-<td align="center">端口</td>
-<td align="center">默认 8080，<code>insecure-port</code>修改</td>
-<td align="center">默认 6443，<code>secure-port</code>修改</td>
-</tr>
-<tr>
-<td align="center">IP</td>
-<td align="center">默认 localhost, <code>insecure-bind-address</code>修改</td>
-<td align="center">默认为第一个非 localhost 网卡地址，<code>bind-address</code>修改</td>
-</tr>
-<tr>
-<td align="center">处理流程</td>
-<td align="center">无需认证和授权</td>
-<td align="center">需要认证和授权</td>
-</tr>
-<tr>
-<td align="center">准入控制</td>
-<td align="center">是</td>
-<td align="center">是</td>
-</tr>
-<tr>
-<td align="center">访问控制</td>
-<td align="center">需要拥有主机访问权限</td>
-<td align="center">需要认证和授权模块正常运行</td>
-</tr>
-</tbody></table>
-<p>注：TLS 中，证书和私钥相关参数为<code>tls-cert-file</code> 和 <code>tls-private-key-file</code>。<br>访问 API Server 的方式有 kubectl，客户端的库和 Rest 请求。通常来说，想在外部访问 API Server 需要通过安全端口访问。通过安全端口访问需要经过三重校验，即 Authentication（身份认证），Authorization（授权）和 Admission Control（准入控制）。<br><img src="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#align=left&display=inline&height=150&margin=%5Bobject%20Object%5D&originHeight=150&originWidth=267&size=0&status=done&style=none&width=267" alt=""></p>
-<h1 id="Authentication（身份认证）"><a href="#Authentication（身份认证）" class="headerlink" title="Authentication（身份认证）"></a>Authentication（身份认证）</h1><blockquote>
-<p><strong>Authentication</strong> is the act of confirming the truth of an attribute of a single piece of data claimed true by an entity.<br>From: <a href="https://en.wikipedia.org/wiki/Authentication" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authentication</a><br>通俗的来说，身份认证解决的是“让系统/服务端知道你是谁”的问题，即对用户身份的确认。值得注意的是，Wikipedia 中还特别标注“ <em>Not to be confused with authorization.</em> ”<br>对于身份的认证，现实生活中可能是查验证件，也可能是对暗号。</p>
-</blockquote>
-<p>对应的，在 Kubernetes 中，也有对应的几种客户端身份认证方式：</p>
-<ul>
-<li>证书认证：基于 CA 根证书签名的双向数字证书认证方式；</li>
-<li>Token 认证：通过 Token 来认证；</li>
-<li>用户密码：通过用户密码的方式认证；</li>
-</ul>
-<p>可以同时指定多个身份认证模块，在流程中将会以顺序执行的方式进行认证过程，直到其中一个认证模块认证成功。如果请求认证失败，则会返回 401 状态码。（PS：这里引入了一个 401 状态码的历史遗留问题——401 的语义其实应该是 Unauthenticated）</p>
-<p>一旦认证成功，用户就会被分配一个特定的 username。在随后的访问控制流程中，这个 username 将会一直使用。尽管如此，这个 username 却也不会对应存在一个真实的<strong>用户对象</strong>，该信息也不会被存储。</p>
-<p>（我的理解：这个所谓的 username 的存在仅仅是为了在整个访问控制流程中能够进行上下文信息的传递，完成一个链式的验证。和传统意义上的用户相比，K8S 的访问控制基于单次的请求，在请求的过程中抽象来决定行为的合法性和有效性。）</p>
-<h1 id="Authorization（授权）"><a href="#Authorization（授权）" class="headerlink" title="Authorization（授权）"></a>Authorization（授权）</h1><blockquote>
-<p><strong>Authorization</strong> is the function of specifying access rights/privileges to resources, which is related to information security and computer security in general and to access control in particular.<br>From: <a href="https://en.wikipedia.org/wiki/Authorization" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authorization</a><br>与身份认证不同的是，授权关注的是对资源的访问控制，通俗的说就是“系统要知道你这个身份能够做什么”。</p>
-</blockquote>
-<p>当请求通过了身份认证之后，请求才会进入授权流程。请求的内容包含三个部分：用户名（username of the requester），动作（ requested action），动作影响的对象（the object affected by the action）。在已有的多种授权策略中，只要有一个能够声明此用户有执行对应动作的权限，则请求就被授权成功。若所有授权策略全部失败，则返回 403 状态码。<br>授权模块的种类：</p>
-<ul>
-<li>ABAC</li>
-<li>RBAC</li>
-<li>Node</li>
-<li>Webhook</li>
-</ul>
-<h1 id="Admission-Control（准入控制）"><a href="#Admission-Control（准入控制）" class="headerlink" title="Admission Control（准入控制）"></a>Admission Control（准入控制）</h1><p>通过认证和授权流程之后，请求的调用还需要通过准入控制链的检查。与上述模块不同，准入控制能够修改请求参数完成一些任务。<br>当多个准入控制模块配置完毕后，请求的调用会依次按顺序进行检查。一旦任意一个准入控制模块检查不通过，则请求立即被拒绝。而请求完成了所有检查后，会采用相应 API 对象的验证流程对请求进行验证，然后写入对象库。</p>
-<blockquote>
-<p>Once a request passes all admission controllers, it is validated using the validation routines for the corresponding API object, and then written to the object store (shown as step <strong>4</strong>).</p>
-</blockquote>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>从整体来看，Kubernetes 对于 API Server 的请求主要分为两大部分：内部和外部。<br>内部是指在 master 节点使用 kubectl 命令进行操作，这时，因为是在节点内部操作，因此并不会使用安全端口，直接采用 localhost 这个 ip 上的非安全端口进行访问。<br>而对于 API Server 的外部请求调用（包括 Pod 和 Rest 请求），则需要使用安全端口进行访问。通过安全端口的请求，需要进行严格的三层校验才能调用成功。这就通过确保只执行权限内允许的操作保证了集群操作的安全性。<br>关于每个部分的详细介绍，会单独抽成三部分继续分解。</p>
-
-      
-    </div>
-    <div class="article-footer">
-      <blockquote class="mt-2x">
-  <ul class="post-copyright list-unstyled">
-    
-    <li class="post-copyright-link hidden-xs">
-      <strong>本文链接：</strong>
-      <a href="https://study4.fun/2019/04/25/k8s-api-server-security/" title="Kubernetes学习笔记——基于API Server的安全机制浅析" target="_blank" rel="external">https://study4.fun/2019/04/25/k8s-api-server-security/</a>
-    </li>
-    
-    <li class="post-copyright-license">
-      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
-    </li>
-  </ul>
-</blockquote>
-
-
-<div class="panel panel-default panel-badger">
+<article class="panel panel-default hover-shadow hover-grow" itemscope itemtype="http://schema.org/BlogPosting">
   <div class="panel-body">
-    <figure class="media">
-      <div class="media-left">
-        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
-          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
-        </a>
-      </div>
-      <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
-        <div>只是一个普通的开发者。</div>
-      </div>
-    </figure>
-  </div>
+     <div class="article-meta">
+       <time datetime="2020-08-27T15:20:00.000Z" itemprop="datePublished">2020-08-27</time>
+     </div>
+     <h3 class="article-title" itemprop="name">
+       <a class="article-link" href="/2020/08/27/alfred-tutorial-features/">Alfred使用不完全教程——Features</a>
+     </h3>
+   </div>
+   
+   <div class="panel-footer">
+     
+      <a href="/tags/Alfred/" class="label label-default mb">Alfred</a>
+     
+      <a href="/tags/%E6%95%99%E7%A8%8B/" class="label label-default mb">教程</a>
+     
+     
+   </div>
+   
+</article>
+
+
 </div>
 
-
+      </div>
     </div>
   </article>
-  
-    
-  <section id="comments">
-  	
-      <div id="vcomments"></div>
-    
-  </section>
-
-
-  
-</div>
-
-  <nav class="bar bar-footer clearfix" data-stick-bottom>
-  <div class="bar-inner">
-  
-  <ul class="pager pull-left">
-    
-    <li class="prev">
-      <a href="/2019/05/17/go-basic/" title="Go学习笔记——基础知识"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
-    
-    <li class="next">
-      <a href="/2018/09/09/k8s-pod-scheduling/" title="Kubernetes学习笔记——Pod调度"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
-    </li>
-    
-    
-  </ul>
-  
-  
-  
-  <div class="bar-right">
-    
-    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
-    
-  </div>
-  </div>
-</nav>
-  
-
-
+   
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -604,127 +457,6 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
-
-   
-
-
-<!-- custom analytics part create by xiamo -->
-<script defer src="https://cdn1.lncld.net/static/js/av-min-1.2.1.js"></script>
-<script defer>
-AV.init({
-  appId: 'qiEYglfUBgWU8rb7ePdk9rLk-gzGzoHsz',
-  appKey: 'WdbxseOBWVNAFS5ekm2NQHRg'
-});
-
-function showTime(Counter) {
-	var query = new AV.Query(Counter);
-		var visitors= $('.leancloud_visitors');
-		query.greaterThanOrEqualTo("time", 0);		
-		query.find({
-			success: function(results) {
-				if (results.length == 0) {				
-					return;
-				}
-				var data = results;
-				visitors.each(function(){
-					var url = $(this).attr('id').trim();					
-					for (var i = 0; i < data.length; i++) {
-						var object = data[i];
-						var content = object.get('time');
-						var _url = object.get('url')
-						if(url == _url){
-							$(this).text(content);
-						}
-					}
-				})
-				
-			},
-			error: function(object, error) {
-				console.log("Error: " + error.code + " " + error.message);
-			}
-		});
-}
-
-function addCount(Counter) {
-	var Counter = AV.Object.extend("Counter");
-	url = $(".leancloud_visitors").attr('id').trim();
-	title = $(".leancloud_visitors").attr('data-flag-title').trim();
-	var query = new AV.Query(Counter);
-	query.equalTo("url", url);
-	query.find({
-		success: function(results) {
-			if (results.length > 0) {
-				var counter = results[0];
-				counter.fetchWhenSave(true);
-				counter.increment("time");
-				counter.save(null, {
-					success: function(counter) {
-						var content = counter.get('time');
-						$(document.getElementById(url)).text(content);
-					},
-					error: function(counter, error) {
-						console.log('Failed to save Visitor num, with error message: ' + error.message);
-					}
-				});
-			} else {
-				var newcounter = new Counter();
-				newcounter.set("title", title);
-				newcounter.set("url", url);
-				newcounter.set("time", 1);
-				newcounter.save(null, {
-					success: function(newcounter) {
-					    console.log("newcounter.get('time')="+newcounter.get('time'));
-						var content = newcounter.get('time');
-						$(document.getElementById(url)).text(content);
-					},
-					error: function(newcounter, error) {
-						console.log('Failed to create');
-					}
-				});
-			}
-		},
-		error: function(error) {
-			console.log('Error:' + error.code + " " + error.message);
-		}
-	});
-}
-$(function() {
-	var Counter = AV.Object.extend("Counter");
-	if ($('.leancloud_visitors').length == 1) {
-		addCount(Counter);
-	} else {
-		showTime(Counter);
-	}
-}); 
-</script>
-
-
-
-   
-    
-  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/valine"></script>
-  <script type="text/javascript">
-  var GUEST = ['nick', 'mail', 'link'];
-  var meta = 'nick,mail,link';
-  meta = meta.split(',').filter(function(item) {
-    return GUEST.indexOf(item) > -1;
-  });
-  new Valine({
-    el: '#vcomments',
-    verify: false,
-    notify: false,
-    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
-    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
-    placeholder: '欢迎留下评论',
-    avatar: 'mm',
-    meta: meta,
-    pageSize: '10' || 10,
-    visitor: false
-  });
-  </script>
-
-     
 
 
 
