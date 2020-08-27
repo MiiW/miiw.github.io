@@ -20,15 +20,15 @@
   
   
   <title>APUE读书笔记（一） | 学而时习之</title>
-  <meta name="description" content="一. 基础知识1.1 体系结构系统调用：内核的接口。应用程序既可以使用共用函数库，也可以使用系统调用。 1.2 登录登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序。 1.3 目录每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析。进程可以使用 chdir 函数更改工作目录。 1.4 输入输出">
+  <meta name="description" content="一. 基础知识1.1 体系结构系统调用：内核的接口应用程序既可以使用共用函数库，也可以使用系统调用 1.2 登录登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序 1.3 目录每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析进程可以使用 chdir 函数更改工作目录 1.4 输入输出1.4.1 文件描述符文件">
 <meta property="og:type" content="article">
 <meta property="og:title" content="APUE读书笔记（一）">
 <meta property="og:url" content="https://study4.fun/2020/08/15/apue-readling-notes-1/">
 <meta property="og:site_name" content="Study4Fun">
-<meta property="og:description" content="一. 基础知识1.1 体系结构系统调用：内核的接口。应用程序既可以使用共用函数库，也可以使用系统调用。 1.2 登录登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序。 1.3 目录每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析。进程可以使用 chdir 函数更改工作目录。 1.4 输入输出">
+<meta property="og:description" content="一. 基础知识1.1 体系结构系统调用：内核的接口应用程序既可以使用共用函数库，也可以使用系统调用 1.2 登录登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序 1.3 目录每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析进程可以使用 chdir 函数更改工作目录 1.4 输入输出1.4.1 文件描述符文件">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-08-15T15:55:00.000Z">
-<meta property="article:modified_time" content="2020-08-16T04:57:47.120Z">
+<meta property="article:modified_time" content="2020-08-27T15:34:09.714Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="读书笔记">
 <meta property="article:tag" content="Unix">
@@ -368,20 +368,61 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/08/15/apue-readling-notes-1/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 139(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 922(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
 	
 
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h1 id="一-基础知识"><a href="#一-基础知识" class="headerlink" title="一. 基础知识"></a>一. 基础知识</h1><h2 id="1-1-体系结构"><a href="#1-1-体系结构" class="headerlink" title="1.1 体系结构"></a>1.1 体系结构</h2><p>系统调用：内核的接口。<br>应用程序既可以使用共用函数库，也可以使用系统调用。</p>
-<h2 id="1-2-登录"><a href="#1-2-登录" class="headerlink" title="1.2 登录"></a>1.2 登录</h2><p>登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序。</p>
-<h2 id="1-3-目录"><a href="#1-3-目录" class="headerlink" title="1.3 目录"></a>1.3 目录</h2><p>每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析。<br>进程可以使用 chdir 函数更改工作目录。</p>
-<h2 id="1-4-输入输出"><a href="#1-4-输入输出" class="headerlink" title="1.4 输入输出"></a>1.4 输入输出</h2>
+        <h1 id="一-基础知识"><a href="#一-基础知识" class="headerlink" title="一. 基础知识"></a>一. 基础知识</h1><h2 id="1-1-体系结构"><a href="#1-1-体系结构" class="headerlink" title="1.1 体系结构"></a>1.1 体系结构</h2><p>系统调用：内核的接口<br>应用程序既可以使用共用函数库，也可以使用系统调用</p>
+<h2 id="1-2-登录"><a href="#1-2-登录" class="headerlink" title="1.2 登录"></a>1.2 登录</h2><p>登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序</p>
+<h2 id="1-3-目录"><a href="#1-3-目录" class="headerlink" title="1.3 目录"></a>1.3 目录</h2><p>每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析<br>进程可以使用 chdir 函数更改工作目录</p>
+<h2 id="1-4-输入输出"><a href="#1-4-输入输出" class="headerlink" title="1.4 输入输出"></a>1.4 输入输出</h2><h3 id="1-4-1-文件描述符"><a href="#1-4-1-文件描述符" class="headerlink" title="1.4.1 文件描述符"></a>1.4.1 文件描述符</h3><p>文件描述符是一个索引值，指向内核为每一个进程所维护的该进程打开文件的记录表<br>取值范围为 0 到 OPEN_MAX（每个进程最多可以打开 的文件数-1，63）</p>
+<h3 id="1-4-2-标准输入、标准输出和标准错误"><a href="#1-4-2-标准输入、标准输出和标准错误" class="headerlink" title="1.4.2 标准输入、标准输出和标准错误"></a>1.4.2 标准输入、标准输出和标准错误</h3><p>标准输入、标准输出和标准错误是在运行新程序时，shell 为程序默认打开的 3 个文件描述符</p>
+<h2 id="1-5-程序和进程"><a href="#1-5-程序和进程" class="headerlink" title="1.5 程序和进程"></a>1.5 程序和进程</h2><p>内核使用 exec 函数将程序读入内存并执行程序<br>fork 函数创建一个新进程，该进程（子进程）是调用进程（父进程）的一个副本<br>在创建时，对父进程返回子进程 ID，对子进程返回 0</p>
+<h2 id="1-6-线程"><a href="#1-6-线程" class="headerlink" title="1.6 线程"></a>1.6 线程</h2><p>一个进程内的所有线程共享同一地址空间、文件描述符、栈以及与进程相关的属性</p>
+<h2 id="1-7-出错处理"><a href="#1-7-出错处理" class="headerlink" title="1.7 出错处理"></a>1.7 出错处理</h2><p>errno：Unix 系统函数出错时返回的负值<br>关于 errno：</p>
+<ul>
+<li>如果没有出错，其值都不会被例程清除</li>
+<li>任何函数都不会将 errno 设置为 0</li>
+</ul>
+<p>关于错误：</p>
+<ul>
+<li>出错分为致命性的和非致命性的</li>
+<li>对于致命性错误，可打印出错消息或者写入日志</li>
+<li>对于非致命错误，可以尝试重试（延时、指数补偿算法）</li>
+</ul>
+<h2 id="1-8-用户标识"><a href="#1-8-用户标识" class="headerlink" title="1.8 用户标识"></a>1.8 用户标识</h2><h3 id="1-用户-ID"><a href="#1-用户-ID" class="headerlink" title="1. 用户 ID"></a>1. 用户 ID</h3><p>用户不可更改其用户 ID<br>用户 ID 为 0 的用户为 root 用户或超级用户</p>
+<h3 id="2-组-ID"><a href="#2-组-ID" class="headerlink" title="2. 组 ID"></a>2. 组 ID</h3><p>组文件将组名映射为数字的组 ID，位于/etc/group</p>
+<h3 id="3-附属组-ID"><a href="#3-附属组-ID" class="headerlink" title="3. 附属组 ID"></a>3. 附属组 ID</h3><p>系统允许用户属于另外一些组，一个用户属于多至 16 个其他的组</p>
+<h2 id="1-9-信号"><a href="#1-9-信号" class="headerlink" title="1.9 信号"></a>1.9 信号</h2><p>信号用于通知进程发生了某种状况<br>处理信号的方式：</p>
+<ul>
+<li>忽略</li>
+<li>系统默认方式处理</li>
+<li>提供函数，信号发生时调用，即捕捉信号</li>
+</ul>
+<h2 id="1-10-时间"><a href="#1-10-时间" class="headerlink" title="1.10 时间"></a>1.10 时间</h2><p>日历时间：自 UTC 时间的秒数累计值<br>进程时间：也叫做 CPU 时间，用来度量进程使用的 CPU 资源，以时钟 tick 计算<br>系统为进程维护的三个进程时间值：</p>
+<ul>
+<li>时钟时间，进程运行的时间总量（与系统同时运行的进程数有关）</li>
+<li>用户 CPU 时间，执行用户指令所用的时间量</li>
+<li>系统 CPU 时间，为该进程执行内核程序经历的时间量</li>
+</ul>
+<p>用户 CPU 时间和系统 CPU 时间常称为 CPU 时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 度量执行时间</span><br><span class="line">time -p &lt;command&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-11-系统调用和库函数"><a href="#1-11-系统调用和库函数" class="headerlink" title="1.11 系统调用和库函数"></a>1.11 系统调用和库函数</h2><p>系统调用：提供给程序向内核请求服务的，操作系统提供的入口点<br>区别：</p>
+<ul>
+<li>库函数可以被替换，而系统调用通常不可替换</li>
+<li>应用程序既可以调用 系统调用，也可以调用 库函数</li>
+<li>许多库函数会调用系统调用</li>
+<li>系统调用通常是提供最接口，而库函数通常提供较复杂的功能</li>
+<li><strong>进程控制系统调用（fork/exec/wait）</strong>通常有用户应用程序直接调用</li>
+</ul>
+
       
     </div>
     <div class="article-footer">
