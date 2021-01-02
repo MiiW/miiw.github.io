@@ -1,4 +1,3 @@
-https://study4.fun/2020/11/02/understanding-kubernetes-object/
 https://study4.fun/2020/08/15/apue-readling-notes-1/
 https://study4.fun/2020/05/25/clean-coder-notes/
 https://study4.fun/2020/01/01/2019-comments/
