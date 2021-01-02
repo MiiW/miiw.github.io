@@ -2,39 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://study4.fun/2016/03/20/config-ipv6/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2020/01/01/2019-comments/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2018/09/09/config-dns/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2018/09/09/k8s-pod-scheduling/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2019/05/17/go-basic/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2019/04/25/k8s-api-server-security/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2019/05/22/list-all-pods/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2019/09/03/desired-state-of-world-populator/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2020/05/25/clean-coder-notes/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2019/08/29/dpfcds-notes/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
     <loc>https://study4.fun/2020/08/15/apue-readling-notes-1/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <lastmod>2021-01-02</lastmod>
   </url>  <url>
-    <loc>https://study4.fun/2020/08/27/alfred-tutorial-features/</loc>
-    <lastmod>2020-08-28</lastmod>
+    <loc>https://study4.fun/2020/11/02/understanding-kubernetes-object/</loc>
+    <lastmod>2021-01-02</lastmod>
   </url>
 </urlset>

@@ -19,16 +19,21 @@
   <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
   
   
-  <title>学而时习之</title>
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Study4Fun">
-<meta property="og:url" content="https://study4.fun/page/2/">
+  <title>理解Kubernetes对象 | 学而时习之</title>
+  <meta name="description" content="Kubernetes 集群内，对象是持久化的实体。Kubernetes 使用对象来表征集群的状态，对象表述了应用的运行状况、应用可用的资源、应用的运行策略（重启、升级、容错）。_A Kubernetes object is a “record of intent”–once you create the object, the Kubernetes system will constantly w">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解Kubernetes对象">
+<meta property="og:url" content="https://study4.fun/2020/11/02/understanding-kubernetes-object/">
 <meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="Kubernetes 集群内，对象是持久化的实体。Kubernetes 使用对象来表征集群的状态，对象表述了应用的运行状况、应用可用的资源、应用的运行策略（重启、升级、容错）。_A Kubernetes object is a “record of intent”–once you create the object, the Kubernetes system will constantly w">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-11-02T15:00:00.000Z">
+<meta property="article:modified_time" content="2021-01-02T16:36:06.920Z">
 <meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="Kubernetes">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://study4.fun/page/2/index.html">
+  <link rel="canonical" href="https://study4.fun/2020/11/02/understanding-kubernetes-object/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
   
@@ -316,129 +321,140 @@
 </aside>
 
   
-  <main class="main" role="main">
   
-  <div class="content article-list">
+<meta name="referrer" content="no-referrer" />
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-理解Kubernetes对象" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
-    
+    <div class="article-header">
+      
+        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/09/09/config-dns/">校园网下OpenWrt配置DNS</a>
+    <h1 class="article-title" itemprop="name">
+      理解Kubernetes对象
     </h1>
   
 
-  </div>
-  
-  <p class="article-meta">
-    <!-- MMM D -->
-    <span class="article-date">
+      
+      <div class="article-meta">
+        <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2018/09/09/config-dns/" class="article-date">
-	  <time datetime="2018-09-09T05:55:00.000Z" itemprop="datePublished">2018-09-09</time>
+	<a href="/2020/11/02/understanding-kubernetes-object/" class="article-date">
+	  <time datetime="2020-11-02T15:00:00.000Z" itemprop="datePublished">2020-11-02</time>
 	</a>
 </span>
-    
+        
   <span class="article-category">
     <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
   </span>
 
-    
+        
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/DNS/" rel="tag">DNS</a>, <a class="article-tag-link" href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">网络配置</a>
+	<a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
   </span>
 
 
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2018/09/09/config-dns/#comments" class="article-comment-link">评论</a></span>
-    
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/02/understanding-kubernetes-object/#comments" class="article-comment-link">评论</a></span>
+        
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 963(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 172(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
 	
 
-  </p>
-</article>
-
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>Kubernetes 集群内，对象是持久化的实体。Kubernetes 使用对象来表征集群的状态，对象表述了应用的运行状况、应用可用的资源、应用的运行策略（重启、升级、容错）。_<br>A Kubernetes object is a “record of intent”–once you create the object, the Kubernetes system will constantly work to ensure that object exists. By creating an object, you’re effectively telling the Kubernetes system what you want your cluster’s workload to look like; this is your cluster’s _desired state_.<br>To work with Kubernetes objects–whether to create, modify, or delete them–you’ll need to use the <a href="https://kubernetes.io/docs/concepts/overview/kubernetes-api/" target="_blank" rel="noopener">Kubernetes API</a>. When you use the <code>kubectl</code> command-line interface, for example, the CLI makes the necessary Kubernetes API calls for you. You can also use the Kubernetes API directly in your own programs using one of the <a href="https://kubernetes.io/docs/reference/using-api/client-libraries/" target="_blank" rel="noopener">Client Libraries</a>.</p>
+<h3 id="Object-Spec-and-Status"><a href="#Object-Spec-and-Status" class="headerlink" title="Object Spec and Status"></a>Object Spec and Status</h3>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
     
-      <article class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-  <div class="article-header">
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2020/11/02/understanding-kubernetes-object/" title="理解Kubernetes对象" target="_blank" rel="external">https://study4.fun/2020/11/02/understanding-kubernetes-object/</a>
+    </li>
     
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/20/config-ipv6/">双栈网络配置路由器的ipv6穿透</a>
-    </h1>
-  
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
 
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
   </div>
+</div>
+
+
+    </div>
+  </article>
   
-  <p class="article-meta">
-    <!-- MMM D -->
-    <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/2016/03/20/config-ipv6/" class="article-date">
-	  <time datetime="2016-03-20T14:47:00.000Z" itemprop="datePublished">2016-03-20</time>
-	</a>
-</span>
     
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
-  </span>
-
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
     
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/IPV6/" rel="tag">IPV6</a>, <a class="article-tag-link" href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">网络配置</a>
-  </span>
+  </section>
 
 
-    <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2016/03/20/config-ipv6/#comments" class="article-comment-link">评论</a></span>
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
     
-	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 572(字)</span>
-	
-	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
-	
-
-  </p>
-</article>
-
+    
+    <li class="next">
+      <a href="/2020/08/15/apue-readling-notes-1/" title="APUE读书笔记（一）"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
     
   </div>
-
+  </div>
+</nav>
   
-    
-    <nav class="bar bar-footer clearfix" data-stick-bottom>
-        <div class="bar-inner">
-        <ul class="pager pull-left">
-            
-            <li class="prev">
-                <a href="/">
-                    <i class="icon icon-angle-left"></i>
-                    上一页
-                </a>
-            </li>
-            
-            
-            <li class="next disabled">
-                <a href="javascript:;">
-                    下一页
-                    <i class="icon icon-angle-right"></i>                    
-                </a>
-            </li>
-            
-        </ul>
-        <div class="total-article bar-right">Page 2 of 2</div>
-        </div>
-    </nav>
-    
- 
+
+
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -510,6 +526,33 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '欢迎留下评论',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
 
 
 
