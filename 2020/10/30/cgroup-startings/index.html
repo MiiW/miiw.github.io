@@ -19,21 +19,28 @@
   <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
   
   
-  <title>《代码整洁之道》笔记 | 学而时习之</title>
-  <meta name="description" content="1. 专业主义1.1 担当责任1.2 不行损害之事（1）不要破坏软件功能，让失误率无限接近于 0  让测试人员找不出问题 不发布无把握的代码 反思 bug 怎么越过测试 确信代码正常运行（自动化测试、单元测试） 自动化 QA  （2）不要破坏结构  不为了发布新功能破坏代码的结构 软件要易于修改（需要使用测试保证代码可经常修改）  1.3 职业道德职业发展需要保证每周有自己的时间  领域知识（设计">
+  <title>CGroup初探 | 学而时习之</title>
+  <meta name="description" content="基本概念namespace：隔离进程组之间的资源cgroup：对一组进程进行统一的资源监控和限制，进程按组进行管理的机制cgroup 的构成：  subsystem：对应内核模块，用于对进程组进行操作。 hierarchy：一棵 cgroup 树，用于进程分组。  其他：  在任意一个 hierarchy 内包含 linux 系统的所有 process。 在同一个 hierarchy 内，proc">
 <meta property="og:type" content="article">
-<meta property="og:title" content="《代码整洁之道》笔记">
-<meta property="og:url" content="https://study4.fun/2020/05/25/clean-coder-notes/">
+<meta property="og:title" content="CGroup初探">
+<meta property="og:url" content="https://study4.fun/2020/10/30/cgroup-startings/">
 <meta property="og:site_name" content="Study4Fun">
-<meta property="og:description" content="1. 专业主义1.1 担当责任1.2 不行损害之事（1）不要破坏软件功能，让失误率无限接近于 0  让测试人员找不出问题 不发布无把握的代码 反思 bug 怎么越过测试 确信代码正常运行（自动化测试、单元测试） 自动化 QA  （2）不要破坏结构  不为了发布新功能破坏代码的结构 软件要易于修改（需要使用测试保证代码可经常修改）  1.3 职业道德职业发展需要保证每周有自己的时间  领域知识（设计">
+<meta property="og:description" content="基本概念namespace：隔离进程组之间的资源cgroup：对一组进程进行统一的资源监控和限制，进程按组进行管理的机制cgroup 的构成：  subsystem：对应内核模块，用于对进程组进行操作。 hierarchy：一棵 cgroup 树，用于进程分组。  其他：  在任意一个 hierarchy 内包含 linux 系统的所有 process。 在同一个 hierarchy 内，proc">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-05-25T02:08:00.000Z">
-<meta property="article:modified_time" content="2021-01-02T18:13:09.131Z">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030134-1deb3af4-31eb-4e24-9ae3-d2be6e440fda.png#align=left&display=inline&height=238&margin=%5Bobject%20Object%5D&name=image.png&originHeight=476&originWidth=1056&size=128629&status=done&style=none&width=528">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030153-705d8e96-d042-4333-83b2-066295131056.png#align=left&display=inline&height=211&margin=%5Bobject%20Object%5D&name=image.png&originHeight=422&originWidth=812&size=110989&status=done&style=none&width=406">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030141-540a7a9d-785b-4859-b223-55a1f8a99de2.png#align=left&display=inline&height=41&margin=%5Bobject%20Object%5D&name=image.png&originHeight=82&originWidth=1760&size=55517&status=done&style=none&width=880">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030137-e094db9d-da72-4286-a123-da0164c6e0bf.png#align=left&display=inline&height=55&margin=%5Bobject%20Object%5D&name=image.png&originHeight=110&originWidth=550&size=35444&status=done&style=none&width=275">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030139-a42c4662-4a71-4467-86f4-5ae2c3df8c2b.png#align=left&display=inline&height=174&margin=%5Bobject%20Object%5D&name=image.png&originHeight=348&originWidth=2044&size=320958&status=done&style=none&width=1022">
+<meta property="article:published_time" content="2020-10-30T12:55:00.000Z">
+<meta property="article:modified_time" content="2021-01-02T18:13:08.827Z">
 <meta property="article:author" content="Mii Wang">
-<meta property="article:tag" content="读书笔记">
+<meta property="article:tag" content="容器">
+<meta property="article:tag" content="cgroup">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030134-1deb3af4-31eb-4e24-9ae3-d2be6e440fda.png#align=left&display=inline&height=238&margin=%5Bobject%20Object%5D&name=image.png&originHeight=476&originWidth=1056&size=128629&status=done&style=none&width=528">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://study4.fun/2020/05/25/clean-coder-notes/index.html">
+  <link rel="canonical" href="https://study4.fun/2020/10/30/cgroup-startings/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
   
@@ -325,14 +332,14 @@
 <meta name="referrer" content="no-referrer" />
 <main class="main" role="main">
   <div class="content">
-  <article id="post-《代码整洁之道》笔记" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-CGroup初探" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      《代码整洁之道》笔记
+      CGroup初探
     </h1>
   
 
@@ -340,8 +347,8 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2020/05/25/clean-coder-notes/" class="article-date">
-	  <time datetime="2020-05-25T02:08:00.000Z" itemprop="datePublished">2020-05-25</time>
+	<a href="/2020/10/30/cgroup-startings/" class="article-date">
+	  <time datetime="2020-10-30T12:55:00.000Z" itemprop="datePublished">2020-10-30</time>
 	</a>
 </span>
         
@@ -353,7 +360,7 @@
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a>
+	<a class="article-tag-link" href="/tags/cgroup/" rel="tag">cgroup</a>, <a class="article-tag-link" href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag">容器</a>
   </span>
 
 
@@ -366,197 +373,101 @@
 	</span>
 
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/25/clean-coder-notes/#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/10/30/cgroup-startings/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.4k(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.6k(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 8(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 6(分)</span>
 	
 
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h2 id="1-专业主义"><a href="#1-专业主义" class="headerlink" title="1. 专业主义"></a>1. 专业主义</h2><h3 id="1-1-担当责任"><a href="#1-1-担当责任" class="headerlink" title="1.1 担当责任"></a>1.1 担当责任</h3><h3 id="1-2-不行损害之事"><a href="#1-2-不行损害之事" class="headerlink" title="1.2 不行损害之事"></a>1.2 不行损害之事</h3><p>（1）不要破坏软件功能，让失误率无限接近于 0</p>
+        <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>namespace：隔离进程组之间的资源<br>cgroup：对一组进程进行统一的资源监控和限制，进程按组进行管理的机制<br>cgroup 的构成：</p>
 <ul>
-<li>让测试人员找不出问题</li>
-<li>不发布无把握的代码</li>
-<li>反思 bug 怎么越过测试</li>
-<li>确信代码正常运行（自动化测试、单元测试）</li>
-<li>自动化 QA</li>
+<li>subsystem：对应内核模块，用于对进程组进行操作。</li>
+<li>hierarchy：一棵 cgroup 树，用于进程分组。</li>
 </ul>
-<p>（2）不要破坏结构</p>
+<p>其他：</p>
 <ul>
-<li>不为了发布新功能破坏代码的结构</li>
-<li>软件要易于修改（需要使用测试保证代码可经常修改）</li>
+<li>在任意一个 hierarchy 内包含 linux 系统的所有 process。</li>
+<li>在同一个 hierarchy 内，process 属于唯一的 process group。但 process 可以存在于不同的 hierarchy 中。</li>
+<li>hierarchy 会对应若干不同的 subsystem（可以为 0），一个 subsystem 只能关联一个 hierarchy。systemd 没有对应的 subsystem。</li>
 </ul>
-<h3 id="1-3-职业道德"><a href="#1-3-职业道德" class="headerlink" title="1.3 职业道德"></a>1.3 职业道德</h3><p>职业发展需要保证每周有自己的时间</p>
-<ul>
-<li>领域知识（设计模式、设计原则、方法、实践、工件）</li>
-<li>坚持学习（文章、博客、技术大会）</li>
-<li>练习（每天一到两道题）</li>
-<li>合作</li>
-<li>辅导</li>
-<li>了解业务领域（了解基础架构、基本知识、原则和价值观念）</li>
-<li>站在用户的角度思考</li>
-<li>谦逊</li>
+<p>process -&gt; process group（cgroup） -&gt; hierarchy<br>树节点       -&gt; 树</p>
+<h2 id="Subsystem"><a href="#Subsystem" class="headerlink" title="Subsystem"></a>Subsystem</h2><p><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030134-1deb3af4-31eb-4e24-9ae3-d2be6e440fda.png#align=left&display=inline&height=238&margin=%5Bobject%20Object%5D&name=image.png&originHeight=476&originWidth=1056&size=128629&status=done&style=none&width=528" alt="image.png"><br>subsystem name<br>subsystem 关联 hierarchy id：如果为 0，无绑定/cgroup v2 绑定/未被内核开启<br>num of cgroups：关联 hierarchy 内进程组个数<br>enabled：是否开启，通过内核参数 cgroup_disable 调整</p>
+<h3 id="详细"><a href="#详细" class="headerlink" title="详细"></a>详细</h3><p>cpu (since Linux 2.6.24; CONFIG_CGROUP_SCHED)<br>用来限制 cgroup 的 CPU 使用率。</p>
+<p>cpuacct (since Linux 2.6.24; CONFIG_CGROUP_CPUACCT)<br>统计 cgroup 的 CPU 的使用率。</p>
+<p>cpuset (since Linux 2.6.24; CONFIG_CPUSETS)<br>绑定 cgroup 到指定 CPUs 和 NUMA 节点。</p>
+<p>memory (since Linux 2.6.25; CONFIG_MEMCG)<br>统计和限制 cgroup 的内存的使用率，包括 process memory, kernel memory, 和 swap。</p>
+<p>devices (since Linux 2.6.26; CONFIG_CGROUP_DEVICE)<br>限制 cgroup 创建(mknod)和访问设备的权限。</p>
+<p>freezer (since Linux 2.6.28; CONFIG_CGROUP_FREEZER)<br>suspend 和 restore 一个 cgroup 中的所有进程。</p>
+<p>net_cls (since Linux 2.6.29; CONFIG_CGROUP_NET_CLASSID)<br>将一个 cgroup 中进程创建的所有网络包加上一个 classid 标记，用于 tc 和 iptables。 只对发出去的网络包生效，对收到的网络包不起作用。</p>
+<p>blkio (since Linux 2.6.33; CONFIG_BLK_CGROUP)<br>限制 cgroup 访问块设备的 IO 速度。</p>
+<p>perf_event (since Linux 2.6.39; CONFIG_CGROUP_PERF)<br>对 cgroup 进行性能监控</p>
+<p>net_prio (since Linux 3.3; CONFIG_CGROUP_NET_PRIO)<br>针对每个网络接口设置 cgroup 的访问优先级。</p>
+<p>hugetlb (since Linux 3.5; CONFIG_CGROUP_HUGETLB)<br>限制 cgroup 的 huge pages 的使用量。</p>
+<p>pids (since Linux 4.3; CONFIG_CGROUP_PIDS)<br>限制一个 cgroup 及其子孙 cgroup 中的总进程数。</p>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 挂载一颗和cpuset subsystem关联的cgroup树到&#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;cpuset</span><br><span class="line">mkdir &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;cpuset</span><br><span class="line">mount -t cgroup -o cpuset xxx &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;cpuset</span><br><span class="line"></span><br><span class="line"># 不关联任何子系统</span><br><span class="line">mkdir &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;systemd</span><br><span class="line">mount -t cgroup -o none,name&#x3D;systemd xxx &#x2F;sys&#x2F;fs&#x2F;cgroup&#x2F;systemd</span><br><span class="line"></span><br><span class="line"># 关联所有子系统</span><br><span class="line">mount -t cgroup xxx &#x2F;sys&#x2F;fs&#x2F;cgroup</span><br></pre></td></tr></table></figure>
+
+<p>查看进程对应的 cgroup<br>proc/[pid]/cgroup<br><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030153-705d8e96-d042-4333-83b2-066295131056.png#align=left&display=inline&height=211&margin=%5Bobject%20Object%5D&name=image.png&originHeight=422&originWidth=812&size=110989&status=done&style=none&width=406" alt="image.png"><br>hierarchy id : subsystems : 进程在 hierarchy 中的相对路径</p>
+<h3 id="创建管理-cgroup"><a href="#创建管理-cgroup" class="headerlink" title="创建管理 cgroup"></a>创建管理 cgroup</h3><h4 id="cgroup-目录"><a href="#cgroup-目录" class="headerlink" title="cgroup 目录"></a>cgroup 目录</h4><ul>
+<li><p>cgroup.clone_children<br>这个文件只对 cpuset subsystem 有影响，当该文件的内容为 1 时，新创建的 cgroup 将会继承父 cgroup 的配置，即从父 cgroup 里面拷贝配置文件来初始化新 cgroup，可以参考<a href="https://lkml.org/lkml/2010/7/29/368" target="_blank" rel="noopener">这里</a></p>
+</li>
+<li><p>cgroup.procs<br>当前 cgroup 中的所有进程 ID，系统不保证 ID 是顺序排列的，且 ID 有可能重复</p>
+</li>
+<li><p>cgroup.sane_behavior<br>具体功能不详，可以参考<a href="https://lkml.org/lkml/2014/7/2/684" target="_blank" rel="noopener">这里</a>和<a href="https://lkml.org/lkml/2014/7/2/686" target="_blank" rel="noopener">这里</a></p>
+</li>
+<li><p>notify_on_release<br>该文件的内容为 1 时，当 cgroup 退出时（不再包含任何进程和子 cgroup），将调用 release_agent 里面配置的命令。新 cgroup 被创建时将默认继承父 cgroup 的这项配置。</p>
+</li>
+<li><p>release_agent<br>里面包含了 cgroup 退出（移出）时将会执行的命令，系统调用该命令时会将相应 cgroup 的相对路径当作参数传进去。 注意：这个文件只会存在于 root cgroup 下面，其他 cgroup 里面不会有这个文件。</p>
+</li>
+<li><p>tasks<br>当前 cgroup 中的所有线程 ID，系统不保证 ID 是顺序排列的</p>
+</li>
 </ul>
-<h2 id="2-说“不”"><a href="#2-说“不”" class="headerlink" title="2. 说“不”"></a>2. 说“不”</h2><blockquote>
-<p>能就是能，不能就是不能。不要说“试试看”。</p>
-</blockquote>
-<p>作为专业人士，就不应该什么事都照做</p>
-<h3 id="2-1-对抗角色"><a href="#2-1-对抗角色" class="headerlink" title="2.1 对抗角色"></a>2.1 对抗角色</h3><p>面对艰难的决定，直面不同角色的冲突是最好的办法——找到可能的最好结果</p>
-<p>“为什么”其实并没有那么重要</p>
-<h3 id="2-2-高风险时刻"><a href="#2-2-高风险时刻" class="headerlink" title="2.2 高风险时刻"></a>2.2 高风险时刻</h3><p>在高风险时刻说不，是对大家负责</p>
-<h3 id="2-3-团队精神"><a href="#2-3-团队精神" class="headerlink" title="2.3 团队精神"></a>2.3 团队精神</h3><ul>
-<li>不说谎，做出合理预期</li>
-<li>如果是“试试看”，那就代表之前留有余力。本质上是在说谎，可能是为了护住面子和避免冲突</li>
-<li>不消极对抗，不能任由事态发展</li>
+<h4 id="创建子-cgroup"><a href="#创建子-cgroup" class="headerlink" title="创建子 cgroup"></a>创建子 cgroup</h4><p>新建子文件夹</p>
+<h4 id="添加进程"><a href="#添加进程" class="headerlink" title="添加进程"></a>添加进程</h4><ul>
+<li><p>在一颗 cgroup 树里面，一个进程必须要属于一个 cgroup。</p>
+</li>
+<li><p>新创建的子进程将会自动加入父进程所在的 cgroup</p>
+</li>
+<li><p>从一个 cgroup 移动一个进程到另一个 cgroup 时，只要有目的 cgroup 的写入权限就可以了，系统不会检查源 cgroup 里的权限。</p>
+</li>
+<li><p>用户只能操作属于自己的进程，不能操作其他用户的进程，root 账号除外</p>
+</li>
 </ul>
-<h3 id="2-4-如何写出好代码"><a href="#2-4-如何写出好代码" class="headerlink" title="2.4 如何写出好代码"></a>2.4 如何写出好代码</h3><p>坚守专业主义精神，说不</p>
-<h2 id="3-说“是”"><a href="#3-说“是”" class="headerlink" title="3. 说“是”"></a>3. 说“是”</h2><h3 id="3-1-承诺用语的三个阶段"><a href="#3-1-承诺用语的三个阶段" class="headerlink" title="3.1 承诺用语的三个阶段"></a>3.1 承诺用语的三个阶段</h3><ul>
-<li>口头上说。缺乏承诺，通常是“需要、但愿、让我们”等</li>
-<li>心里认真。有清晰的事实陈述，明确说明了期限</li>
-<li>真正付诸行动。</li>
-</ul>
-<h3 id="3-2-如何做到“言必信，行必果”"><a href="#3-2-如何做到“言必信，行必果”" class="headerlink" title="3.2 如何做到“言必信，行必果”"></a>3.2 如何做到“言必信，行必果”</h3><ul>
-<li>如果目标依赖于他人，就应该采取具体行动，推动最终目标</li>
-<li>即使感觉目标无法完成，也要弄清楚目标是否能够达成</li>
-<li>如果做不到，就应尽早向承诺对象发起预警</li>
-</ul>
-<h3 id="3-3-如何说“是”"><a href="#3-3-如何说“是”" class="headerlink" title="3.3 如何说“是”"></a>3.3 如何说“是”</h3><p>不说“试试”，直接说出所有的可能性</p>
-<p>坚守原则</p>
-<h2 id="4-编码"><a href="#4-编码" class="headerlink" title="4. 编码"></a>4. 编码</h2><h3 id="4-1-编码需要考虑的问题"><a href="#4-1-编码需要考虑的问题" class="headerlink" title="4.1 编码需要考虑的问题"></a>4.1 编码需要考虑的问题</h3><ul>
-<li>代码正常工作</li>
-<li>解决客户提出的问题——不是需求，需求不一定能解决问题</li>
-<li>和现有的系统能很好的结合</li>
-<li>其他程序员可以读懂你的代码</li>
-<li>不要在疲劳或者焦虑的时候编码</li>
-</ul>
-<h3 id="4-2-流态区"><a href="#4-2-流态区" class="headerlink" title="4.2 流态区"></a>4.2 流态区</h3><p>这种状态下，感觉效率极高、绝无错误</p>
-<p>避免进入流态区，因为这样会进入“放弃顾及全局”的陷阱</p>
-<h3 id="4-3-思路阻塞"><a href="#4-3-思路阻塞" class="headerlink" title="4.3 思路阻塞"></a>4.3 思路阻塞</h3><ul>
-<li>找个搭档结对编程</li>
-<li>创造性输入（PPT、音乐、电影等）</li>
-</ul>
-<h3 id="4-4-调试"><a href="#4-4-调试" class="headerlink" title="4.4 调试"></a>4.4 调试</h3><p>调试和编码一样重要</p>
-<p>TDD 可以减少调试时间</p>
-<h3 id="4-5-保持节奏"><a href="#4-5-保持节奏" class="headerlink" title="4.5 保持节奏"></a>4.5 保持节奏</h3><p>在疲劳的时候应该离开工作</p>
-<p>回家路上把自己从工作中抽离出来</p>
-<p>洗澡时或许会浮现解决方案</p>
-<h3 id="4-6-关于进度延迟"><a href="#4-6-关于进度延迟" class="headerlink" title="4.6 关于进度延迟"></a>4.6 关于进度延迟</h3><ul>
-<li>不盲目期望提前完成</li>
-<li>不盲目冲刺（可以考虑所有情况，缩减交付的范围）</li>
-<li>加班（需要保证有个人有时间、短期加班、有加班失败的后备预案）</li>
-<li>交付失误时不自欺欺人</li>
-<li>定义一个确切的“完成”标准（自动化验收测试）</li>
-</ul>
-<h3 id="4-7-帮助他人"><a href="#4-7-帮助他人" class="headerlink" title="4.7 帮助他人"></a>4.7 帮助他人</h3><ul>
-<li>帮助他人的时候不应付</li>
-<li>学会接受他人的帮助，学会请求帮助</li>
-<li>辅导与寻求辅导</li>
-</ul>
-<h2 id="5-测试驱动开发"><a href="#5-测试驱动开发" class="headerlink" title="5. 测试驱动开发"></a>5. 测试驱动开发</h2><p>三项法则</p>
-<ul>
-<li>在写好失败单元测试前，不要写任何产品代码；</li>
-<li>一旦单元测试失败了，就不要写测试代码；</li>
-<li>产品代码只需要恰好能够让当前失败的单元测试通过即可，不要多写。</li>
-</ul>
-<p>优势</p>
-<ul>
-<li>确定性；对代码的掌控程度高。</li>
-<li>缺陷注入率；降低代码的 bug 和风险。</li>
-<li>勇气；测试完备，修改或者重构的风险降低。</li>
-<li>文档；单元测试即示例，清晰准确。</li>
-<li>设计；迫使自己考虑好的设计。</li>
-</ul>
-<h2 id="6-练习"><a href="#6-练习" class="headerlink" title="6. 练习"></a>6. 练习</h2><h3 id="6-1-练习方式"><a href="#6-1-练习方式" class="headerlink" title="6.1 练习方式"></a>6.1 练习方式</h3><h4 id="kata"><a href="#kata" class="headerlink" title="kata"></a>kata</h4><p>练习解决这个问题所需要的动作和决策</p>
-<p>学习热键和导航操作、测试驱动开的、持续集成之类的方法</p>
-<h4 id="wasa"><a href="#wasa" class="headerlink" title="wasa"></a>wasa</h4><p>两个人的 kata，一个人写单元测试，另一个人写程序</p>
-<h4 id="自由练习"><a href="#自由练习" class="headerlink" title="自由练习"></a>自由练习</h4><p>多人参与的 wasa</p>
-<h3 id="6-2-拓展经验的方法"><a href="#6-2-拓展经验的方法" class="headerlink" title="6.2 拓展经验的方法"></a>6.2 拓展经验的方法</h3><p>开源</p>
-<p>使用自己的时间练习</p>
-<h2 id="7-验收测试"><a href="#7-验收测试" class="headerlink" title="7.验收测试"></a>7.验收测试</h2><h3 id="7-1-需求的沟通"><a href="#7-1-需求的沟通" class="headerlink" title="7.1 需求的沟通"></a>7.1 需求的沟通</h3><p>不要过早精细化需求</p>
-<ul>
-<li>不确定原则（观察者效应）：观察到的新信息会影响对整个系统的看法</li>
-<li>预估焦虑：需求一定会变化，追求早期的精准性是徒劳的</li>
-</ul>
-<p>迟来的模糊性：需求文档中的模糊之处，都对应着业务方的分歧</p>
-<h3 id="7-2-验收测试"><a href="#7-2-验收测试" class="headerlink" title="7.2 验收测试"></a>7.2 验收测试</h3><p>“完成”的含义</p>
-<ul>
-<li>所有的代码写完了</li>
-<li>测试通过了</li>
-<li>QA 和需求方已经认可</li>
-</ul>
-<p>沟通：开发方、业务方、测试方达成共识</p>
-<p>自动化：缩减成本</p>
-<p>测试并不是额外工作</p>
-<p>验收测试与开发应当不是同一个人编写</p>
-<p>开发人员的角色是把验收测试和开发系统联系起来保证测试的通过</p>
-<p>不能被动接收测试，需要协商并改进</p>
-<p>验收测试和单元测试：内部 vs 外部</p>
-<p>图形界面和其他复杂因素：调用 API 而不是 GUI</p>
-<p>持续集成：失败应立刻终止</p>
-<h2 id="8-测试策略"><a href="#8-测试策略" class="headerlink" title="8. 测试策略"></a>8. 测试策略</h2><p>自动化测试金字塔：</p>
-<ul>
-<li>单元测试：在最低层次上定义系统。</li>
-<li>组件测试：对业务规则的验收测试。</li>
-<li>集成测试：装备测试，确认组件之间正确连接，彼此通信畅通。</li>
-<li>系统测试：测试系统是否正确组装完毕，以及各个组件之间是否正确交互，同时包括吞吐量测试和性能测试。</li>
-<li>人工探索式测试：确保系统在人工才操作表现良好。</li>
-</ul>
-<h2 id="9-时间管理"><a href="#9-时间管理" class="headerlink" title="9. 时间管理"></a>9. 时间管理</h2><h3 id="9-1-会议"><a href="#9-1-会议" class="headerlink" title="9.1 会议"></a>9.1 会议</h3><p>学会拒绝/离席，确定议程和目标，立会，迭代计划会议，争论与反对</p>
 <blockquote>
-<p>凡是不能在五分钟内解决的争论，都不能靠辩论解决。<br>唯一的出路是：用数据说话。可以做试验、模仿或者建模。</p>
+<p>打印当前 shell pid<br>echo $$</p>
 </blockquote>
-<h3 id="9-2-注意力点数"><a href="#9-2-注意力点数" class="headerlink" title="9.2 注意力点数"></a>9.2 注意力点数</h3><p>学会安排时间，妥善使用自己的注意力点数</p>
-<p>睡眠/咖啡/恢复/肌肉注意力/输入和输出</p>
-<h3 id="9-3-时间拆分和番茄工作法"><a href="#9-3-时间拆分和番茄工作法" class="headerlink" title="9.3 时间拆分和番茄工作法"></a>9.3 时间拆分和番茄工作法</h3><p>记录下来并画图展示</p>
-<h3 id="9-4-要避免的行为"><a href="#9-4-要避免的行为" class="headerlink" title="9.4 要避免的行为"></a>9.4 要避免的行为</h3><p>优先级错乱——提高某个任务的优先级，有借口推迟真正急迫的任务</p>
-<h3 id="9-5-死胡同"><a href="#9-5-死胡同" class="headerlink" title="9.5 死胡同"></a>9.5 死胡同</h3><p>不执拗于不容放弃也无法绕开的主意，听取其他意见。越是坚持，浪费的时间越多。</p>
-<h3 id="9-6-泥潭"><a href="#9-6-泥潭" class="headerlink" title="9.6 泥潭"></a>9.6 泥潭</h3><p>走回头路是最简单的办法。</p>
-<p>发现身处泥潭还固执前进，是最严重的优先级错乱。</p>
-<h2 id="10-预估"><a href="#10-预估" class="headerlink" title="10. 预估"></a>10. 预估</h2><h3 id="10-1-什么是预估"><a href="#10-1-什么是预估" class="headerlink" title="10.1 什么是预估"></a>10.1 什么是预估</h3><p>承诺还是猜测？</p>
-<p>预估是一种猜测，不包含任何承诺的色彩。不是一个定数，是一种概率分布。</p>
-<p>小心给出暗示性的承诺。</p>
-<h3 id="10-2-PERT（计划评审技术）"><a href="#10-2-PERT（计划评审技术）" class="headerlink" title="10.2 PERT（计划评审技术）"></a>10.2 PERT（计划评审技术）</h3><p>乐观预估（1%），标称预估（概率最大），悲观预估（1%）</p>
-<p>得出任务的<strong>期望完成时间</strong>和任务的<strong>概率分布标准差</strong>（不确定性）</p>
-<h3 id="10-3-预估任务"><a href="#10-3-预估任务" class="headerlink" title="10.3 预估任务"></a>10.3 预估任务</h3><p>德尔菲法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh -c &#39;echo 1421 &gt; ..&#x2F;cgroup.procs&#39;</span><br></pre></td></tr></table></figure>
+
+<p>将 pid 写入，即是进程加入 cgroup。pid 不可在文件中删除，只可以被转移。因为 在一颗 cgroup 树里面，一个进程必须要属于一个 cgroup</p>
+<h2 id="Pid-Subsystem"><a href="#Pid-Subsystem" class="headerlink" title="Pid Subsystem"></a>Pid Subsystem</h2><p><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030141-540a7a9d-785b-4859-b223-55a1f8a99de2.png#align=left&display=inline&height=41&margin=%5Bobject%20Object%5D&name=image.png&originHeight=82&originWidth=1760&size=55517&status=done&style=none&width=880" alt="image.png"><br>pids.current: 表示当前 cgroup 及其所有子孙 cgroup 中现有的总的进程数量<br>pids.max: 当前 cgroup 及其所有子孙 cgroup 中所允许创建的总的最大进程数量<br><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030137-e094db9d-da72-4286-a123-da0164c6e0bf.png#align=left&display=inline&height=55&margin=%5Bobject%20Object%5D&name=image.png&originHeight=110&originWidth=550&size=35444&status=done&style=none&width=275" alt="image.png"><br>通过写入 pids.max 限制成功</p>
 <ul>
-<li>亮手指：预估相近达到统一，有分歧则讨论</li>
-<li>规划扑克</li>
-<li>关联预估：多人对任务进行所需时间长短的排序，讨论分歧，任务归类</li>
-<li>三元预估：使用德尔菲法分别进行乐观、标称、悲观预估</li>
+<li>子孙 cgroup 中的 pids.max 大小不能超过父 cgroup 中的大小</li>
+<li>子 cgroup 中的进程数不仅受自己的 pids.max 的限制，还受祖先 cgroup 的限制</li>
 </ul>
-<h3 id="10-4-大数定律"><a href="#10-4-大数定律" class="headerlink" title="10.4 大数定律"></a>10.4 大数定律</h3><p>控制错误的方法——把大任务分成小任务，分开预估在加总，结果会比单独评估大任务要准确的多</p>
-<h2 id="11-压力"><a href="#11-压力" class="headerlink" title="11. 压力"></a>11. 压力</h2><h3 id="11-1-避免压力"><a href="#11-1-避免压力" class="headerlink" title="11.1 避免压力"></a>11.1 避免压力</h3><p>避免对没有把握能够达成的最后期限做出承诺</p>
-<p>让系统、代码和设计尽可能整洁</p>
-<p>在危机时也要遵守纪律原则（例如 TDD）</p>
-<h3 id="11-2-应对压力"><a href="#11-2-应对压力" class="headerlink" title="11.2 应对压力"></a>11.2 应对压力</h3><p>不要惊慌失措：深思熟虑，努力寻找可以带来最好结果的方法</p>
-<p>沟通：告诉你制定的走出困境的计划，请求支援和指引</p>
-<p>坚信纪律和原则</p>
-<p>寻求帮助：结对编程</p>
-<h2 id="12-协作"><a href="#12-协作" class="headerlink" title="12. 协作"></a>12. 协作</h2><p>首要职责是满足雇主的需求，和团队协作，<strong>深刻理解业务目标</strong>，了解企业如何从你的工作中获得回报</p>
-<p>拥有代码的是整个团队，而不是个人</p>
-<p>专业人士会共同工作，彼此面对面。</p>
-<h2 id="13-团队和项目"><a href="#13-团队和项目" class="headerlink" title="13. 团队和项目"></a>13. 团队和项目</h2><p>形成团队需要时间。建立关系，学会互相协作，了解彼此的癖好和长短处，最后凝聚成为团队。</p>
-<p>把项目分配给已经形成凝聚力的团队，而不是围绕项目组建团队。</p>
-<h2 id="14-辅导、实习生和技艺"><a href="#14-辅导、实习生和技艺" class="headerlink" title="14. 辅导、实习生和技艺"></a>14. 辅导、实习生和技艺</h2><p>辅导：</p>
+<p>pids.current &gt; pids.max 出现的情况：</p>
 <ul>
-<li>通过书籍手册向作者学习</li>
-<li>通过观察他人工作来学习</li>
+<li>设置 pids.max 时，将其值设置的已经比 pids.current 小</li>
+<li>pids.max 只会在当前 cgroup 中的进程 fork、clone 的时候生效，将其他进程加入到当前 cgroup 时，不会检测 pids.max</li>
 </ul>
-<p>实习生：</p>
+<h2 id="Memory-Subsystem"><a href="#Memory-Subsystem" class="headerlink" title="Memory Subsystem"></a>Memory Subsystem</h2><p><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030139-a42c4662-4a71-4467-86f4-5ae2c3df8c2b.png#align=left&display=inline&height=174&margin=%5Bobject%20Object%5D&name=image.png&originHeight=348&originWidth=2044&size=320958&status=done&style=none&width=1022" alt="image.png"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">cgroup.event_control       #用于eventfd的接口</span><br><span class="line"> memory.usage_in_bytes      #显示当前已用的内存</span><br><span class="line"> memory.limit_in_bytes      #设置&#x2F;显示当前限制的内存额度</span><br><span class="line"> memory.failcnt             #显示内存使用量达到限制值的次数</span><br><span class="line"> memory.max_usage_in_bytes  #历史内存最大使用量</span><br><span class="line"> memory.soft_limit_in_bytes #设置&#x2F;显示当前限制的内存软额度</span><br><span class="line"> memory.stat                #显示当前cgroup的内存使用情况</span><br><span class="line"> memory.use_hierarchy       #设置&#x2F;显示是否将子cgroup的内存使用情况统计到当前cgroup里面</span><br><span class="line"> memory.force_empty         #触发系统立即尽可能的回收当前cgroup中可以回收的内存</span><br><span class="line"> memory.pressure_level      #设置内存压力的通知事件，配合cgroup.event_control一起使用</span><br><span class="line"> memory.swappiness          #设置和显示当前的swappiness</span><br><span class="line"> memory.move_charge_at_immigrate #设置当进程移动到其他cgroup中时，它所占用的内存是否也随着移动过去</span><br><span class="line"> memory.oom_control         #设置&#x2F;显示oom controls相关的配置</span><br><span class="line"> memory.numa_stat           #显示numa相关的内存</span><br></pre></td></tr></table></figure>
+
+<p>设置了内存限制立即生效 –&gt; 物理内存使用量达到 limit –&gt; memory.failcnt +1 –&gt; 内核会尽量将物理内存中的数据移到 swap 空间上去 –&gt; 设置的 limit 过小，或者 swap 空间不足 –&gt; kill 掉 cgroup 内继续申请内存的进程（默认行为）<br><a href="https://segmentfault.com/a/1190000008125359" target="_blank" rel="noopener">详细</a>链接</p>
+<p>##</p>
+<h2 id="CPU-Subsystem"><a href="#CPU-Subsystem" class="headerlink" title="CPU Subsystem"></a>CPU Subsystem</h2><p>cfs_period_us：时间周期长度<br>cfs_quota_us：在一个周期长度内所能使用的 CPU 时间数<br>cpu.shares：</p>
 <ul>
-<li>技术方面你的传授、培训、督导和检查</li>
+<li>针对所有的 CPU 的相对值，默认值是 1024</li>
+<li>仅在 CPU 忙时起作用</li>
+<li>无法精确的控制 CPU 使用率，因为 cgroup 会动态变化</li>
 </ul>
-<p>技艺：</p>
-<ul>
-<li>技艺的模因包含价值观、原则、技术、态度和正见</li>
-<li>技艺的模因经由口口相传和手手相承而来</li>
-</ul>
+<p>limit_in_cores = cfs_period_us / cfs_quota_us</p>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p><a href="https://segmentfault.com/a/1190000006917884" target="_blank" rel="noopener">https://segmentfault.com/a/1190000006917884</a></p>
 
       
     </div>
@@ -566,7 +477,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://study4.fun/2020/05/25/clean-coder-notes/" title="《代码整洁之道》笔记" target="_blank" rel="external">https://study4.fun/2020/05/25/clean-coder-notes/</a>
+      <a href="https://study4.fun/2020/10/30/cgroup-startings/" title="CGroup初探" target="_blank" rel="external">https://study4.fun/2020/10/30/cgroup-startings/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -613,12 +524,12 @@
   <ul class="pager pull-left">
     
     <li class="prev">
-      <a href="/2020/08/15/apue-readling-notes-1/" title="APUE读书笔记（一）"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+      <a href="/2021/01/02/blogs-workflow/" title="博客写作的工作流"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
     </li>
     
     
     <li class="next">
-      <a href="/2020/01/01/2019-comments/" title="2019的闲言碎语"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/2020/10/26/qos-in-kubernetes/" title="QoS in Kubernetes"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
     
