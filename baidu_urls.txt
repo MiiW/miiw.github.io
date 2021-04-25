@@ -1,3 +1,4 @@
+https://study4.fun/2021/04/25/analysis-of-kubelet-imagegc/
 https://study4.fun/2021/01/02/blogs-workflow/
 https://study4.fun/2020/10/30/cgroup-startings/
 https://study4.fun/2020/10/26/qos-in-kubernetes/
@@ -9,6 +10,6 @@ https://study4.fun/2019/08/29/dpfcds-notes/
 https://study4.fun/2019/05/22/list-all-pods/
 https://study4.fun/2019/05/17/go-basic/
 https://study4.fun/2019/04/25/k8s-api-server-security/
-https://study4.fun/2018/09/09/k8s-pod-scheduling/
 https://study4.fun/2018/09/09/config-dns/
+https://study4.fun/2018/09/09/k8s-pod-scheduling/
 https://study4.fun/2016/03/20/config-ipv6/
