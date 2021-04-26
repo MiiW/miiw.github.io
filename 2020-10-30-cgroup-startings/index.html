@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030137-e094db9d-da72-4286-a123-da0164c6e0bf.png#height=55&id=LF5mR&margin=%5Bobject%20Object%5D&name=image.png&originHeight=110&originWidth=550&originalType=binary&size=35444&status=done&style=none&width=275">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1609611030139-a42c4662-4a71-4467-86f4-5ae2c3df8c2b.png#height=174&id=vHiO8&margin=%5Bobject%20Object%5D&name=image.png&originHeight=348&originWidth=2044&originalType=binary&size=320958&status=done&style=none&width=1022">
 <meta property="article:published_time" content="2020-10-30T12:55:00.000Z">
-<meta property="article:modified_time" content="2021-04-26T18:30:44.695Z">
+<meta property="article:modified_time" content="2021-04-26T18:40:56.678Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="容器">
 <meta property="article:tag" content="cgroup">
@@ -618,19 +618,19 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
   <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
   <script type="text/javascript">
-  var gitalk = new Gitalk({
-    clientID: '165b9a4f859500042709',
-    clientSecret: '4af45adbac4941cdd0612094d67b828f1591c351',
-    repo: 'gitalk',
-    owner: 'MiiW',
-    admin: ['MiiW'],
-    id: md5(location.pathname),
-    distractionFreeMode: true
-  })
-  gitalk.render('comments')
+    var gitalk = new Gitalk({
+      clientID: '165b9a4f859500042709',
+      clientSecret: '4af45adbac4941cdd0612094d67b828f1591c351',
+      repo: 'gitalk',
+      owner: 'MiiW',
+      proxy: 'https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token',
+      admin: ['MiiW'],
+      id: md5(location.pathname),
+      distractionFreeMode: true
+    })
+    gitalk.render('comments')
   </script>
-
-      
+        
 
 
 
