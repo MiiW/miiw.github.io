@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
+  
+  
+  <title>Kubernetes学习笔记——基于API Server的安全机制浅析 | 学而时习之</title>
+  <meta name="description" content="集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost Por)和安全端口(Secure Port)。     本地端口 安全端口    使用场景 测试和启动时使用，Master 节点中不同组件通信 任意场景">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes学习笔记——基于API Server的安全机制浅析">
+<meta property="og:url" content="https://study4.fun/2019-04-25-k8s-api-server-security/">
+<meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="集群安全机制的目标 隔离性，限制容器给集群带来的副作用 最小权限原则 组件的边界划分需要明确 角色划分和权限分配  关于 API ServerAPI Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost Por)和安全端口(Secure Port)。     本地端口 安全端口    使用场景 测试和启动时使用，Master 节点中不同组件通信 任意场景">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#height=150&id=E7DbX&originHeight=150&originWidth=267&originalType=binary&size=0&status=done&style=none&width=267">
+<meta property="article:published_time" content="2019-04-25T02:50:00.000Z">
+<meta property="article:modified_time" content="2021-04-26T18:30:45.127Z">
+<meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="Kubernetes">
+<meta property="article:tag" content="API Server">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#height=150&id=E7DbX&originHeight=150&originWidth=267&originalType=binary&size=0&status=done&style=none&width=267">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://study4.fun/2019-04-25-k8s-api-server-security/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.svg" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/MiiW" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">MiiW</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">一个普通开发者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%87%E5%BF%98%E5%BD%95/">备忘录</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/">日记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Server/" rel="tag">API Server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DNS/" rel="tag">DNS</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/" rel="tag">Golang</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IPV6/" rel="tag">IPV6</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kubelet/" rel="tag">Kubelet</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Pod/" rel="tag">Pod</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Unix/" rel="tag">Unix</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cgroup/" rel="tag">cgroup</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="tag">学习笔记</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag">容器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9D%82%E9%A1%B9/" rel="tag">杂项</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="tag">网络配置</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a><span class="tag-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/API-Server/" style="font-size: 13px;">API Server</a> <a href="/tags/DNS/" style="font-size: 13px;">DNS</a> <a href="/tags/Golang/" style="font-size: 13px;">Golang</a> <a href="/tags/IPV6/" style="font-size: 13px;">IPV6</a> <a href="/tags/Kubelet/" style="font-size: 13px;">Kubelet</a> <a href="/tags/Kubernetes/" style="font-size: 14px;">Kubernetes</a> <a href="/tags/Pod/" style="font-size: 13px;">Pod</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/cgroup/" style="font-size: 13px;">cgroup</a> <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" style="font-size: 13.75px;">学习笔记</a> <a href="/tags/%E5%AE%B9%E5%99%A8/" style="font-size: 13.25px;">容器</a> <a href="/tags/%E6%9D%82%E9%A1%B9/" style="font-size: 13.25px;">杂项</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13.25px;">网络配置</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 13px;">设计模式</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13.5px;">读书笔记</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-04-25-analysis-of-kubelet-imagegc/" class="title">Kubelet Image GC原理分析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-04-25T07:48:00.000Z" itemprop="datePublished">2021-04-25</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-01-02-blogs-workflow/" class="title">博客写作的工作流</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-01-02T15:47:00.000Z" itemprop="datePublished">2021-01-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020-10-30-cgroup-startings/" class="title">CGroup初探</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-10-30T12:55:00.000Z" itemprop="datePublished">2020-10-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%A4%87%E5%BF%98%E5%BD%95/">备忘录</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020-10-26-qos-in-kubernetes/" class="title">QoS in Kubernetes</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-10-26T05:55:00.000Z" itemprop="datePublished">2020-10-26</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020-08-15-apue-readling-notes-1/" class="title">APUE读书笔记（一）</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-08-15T15:55:00.000Z" itemprop="datePublished">2020-08-15</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<meta name="referrer" content="no-referrer" />
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kubernetes学习笔记——基于API Server的安全机制浅析" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kubernetes学习笔记——基于API Server的安全机制浅析
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2019-04-25-k8s-api-server-security/" class="article-date">
+	  <time datetime="2019-04-25T02:50:00.000Z" itemprop="datePublished">2019-04-25</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/API-Server/" rel="tag">API Server</a>, <a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019-04-25-k8s-api-server-security/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.3k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="集群安全机制的目标"><a href="#集群安全机制的目标" class="headerlink" title="集群安全机制的目标"></a>集群安全机制的目标</h1><ul>
+<li>隔离性，限制容器给集群带来的副作用</li>
+<li>最小权限原则</li>
+<li>组件的边界划分需要明确</li>
+<li>角色划分和权限分配</li>
+</ul>
+<h1 id="关于-API-Server"><a href="#关于-API-Server" class="headerlink" title="关于 API Server"></a>关于 API Server</h1><p>API Server 作为集群控制请求的实际入口，通常暴露了两个端口——本地端口(Localhost Por)和安全端口(Secure Port)。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>本地端口</th>
+<th>安全端口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>使用场景</td>
+<td>测试和启动时使用，Master 节点中不同组件通信</td>
+<td>任意场景</td>
+</tr>
+<tr>
+<td>安全协议</td>
+<td>无</td>
+<td>TLS</td>
+</tr>
+<tr>
+<td>端口</td>
+<td>默认 8080，</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><code>insecure-port</code><br>修改 | 默认 6443，<br><code>secure-port</code><br>修改 |<br>| IP | 默认 localhost,<br><code>insecure-bind-address</code><br>修改 | 默认为第一个非 localhost 网卡地址，<br><code>bind-address</code><br>修改 |<br>| 处理流程 | 无需认证和授权 | 需要认证和授权 |<br>| 准入控制 | 是 | 是 |<br>| 访问控制 | 需要拥有主机访问权限 | 需要认证和授权模块正常运行 |</p>
+<p>注：TLS 中，证书和私钥相关参数为<code>tls-cert-file</code> 和 <code>tls-private-key-file</code>。<br>访问 API Server 的方式有 kubectl，客户端的库和 Rest 请求。通常来说，想在外部访问 API Server 需要通过安全端口访问。通过安全端口访问需要经过三重校验，即 Authentication（身份认证），Authorization（授权）和 Admission Control（准入控制）。<br><img src="https://cdn.nlark.com/yuque/0/2020/svg/379285/1589796346707-11dd1d0c-1251-4060-974b-976b3a229552.svg#height=150&id=E7DbX&originHeight=150&originWidth=267&originalType=binary&size=0&status=done&style=none&width=267" alt=""></p>
+<h1 id="Authentication（身份认证）"><a href="#Authentication（身份认证）" class="headerlink" title="Authentication（身份认证）"></a>Authentication（身份认证）</h1><blockquote>
+<p><strong>Authentication</strong> is the act of confirming the truth of an attribute of a single piece of data claimed true by an entity.<br>From: <a href="https://en.wikipedia.org/wiki/Authentication" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authentication</a><br>通俗的来说，身份认证解决的是“让系统/服务端知道你是谁”的问题，即对用户身份的确认。值得注意的是，Wikipedia 中还特别标注“ <em>Not to be confused with authorization.</em> ”<br>对于身份的认证，现实生活中可能是查验证件，也可能是对暗号。</p>
+</blockquote>
+<p>对应的，在 Kubernetes 中，也有对应的几种客户端身份认证方式：</p>
+<ul>
+<li>证书认证：基于 CA 根证书签名的双向数字证书认证方式；</li>
+<li>Token 认证：通过 Token 来认证；</li>
+<li>用户密码：通过用户密码的方式认证；</li>
+</ul>
+<p>可以同时指定多个身份认证模块，在流程中将会以顺序执行的方式进行认证过程，直到其中一个认证模块认证成功。如果请求认证失败，则会返回 401 状态码。（PS：这里引入了一个 401 状态码的历史遗留问题——401 的语义其实应该是 Unauthenticated）</p>
+<p>一旦认证成功，用户就会被分配一个特定的 username。在随后的访问控制流程中，这个 username 将会一直使用。尽管如此，这个 username 却也不会对应存在一个真实的<strong>用户对象</strong>，该信息也不会被存储。</p>
+<p>（我的理解：这个所谓的 username 的存在仅仅是为了在整个访问控制流程中能够进行上下文信息的传递，完成一个链式的验证。和传统意义上的用户相比，K8S 的访问控制基于单次的请求，在请求的过程中抽象来决定行为的合法性和有效性。）</p>
+<h1 id="Authorization（授权）"><a href="#Authorization（授权）" class="headerlink" title="Authorization（授权）"></a>Authorization（授权）</h1><blockquote>
+<p><strong>Authorization</strong> is the function of specifying access rights/privileges to resources, which is related to information security and computer security in general and to access control in particular.<br>From: <a href="https://en.wikipedia.org/wiki/Authorization" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Authorization</a><br>与身份认证不同的是，授权关注的是对资源的访问控制，通俗的说就是“系统要知道你这个身份能够做什么”。</p>
+</blockquote>
+<blockquote>
+</blockquote>
+<p>当请求通过了身份认证之后，请求才会进入授权流程。请求的内容包含三个部分：用户名（username of the requester），动作（ requested action），动作影响的对象（the object affected by the action）。在已有的多种授权策略中，只要有一个能够声明此用户有执行对应动作的权限，则请求就被授权成功。若所有授权策略全部失败，则返回 403 状态码。<br>授权模块的种类：</p>
+<ul>
+<li>ABAC</li>
+<li>RBAC</li>
+<li>Node</li>
+<li>Webhook</li>
+</ul>
+<h1 id="Admission-Control（准入控制）"><a href="#Admission-Control（准入控制）" class="headerlink" title="Admission Control（准入控制）"></a>Admission Control（准入控制）</h1><p>通过认证和授权流程之后，请求的调用还需要通过准入控制链的检查。与上述模块不同，准入控制能够修改请求参数完成一些任务。<br>当多个准入控制模块配置完毕后，请求的调用会依次按顺序进行检查。一旦任意一个准入控制模块检查不通过，则请求立即被拒绝。而请求完成了所有检查后，会采用相应 API 对象的验证流程对请求进行验证，然后写入对象库。</p>
+<blockquote>
+<p>Once a request passes all admission controllers, it is validated using the validation routines for the corresponding API object, and then written to the object store (shown as step <strong>4</strong>).</p>
+</blockquote>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>从整体来看，Kubernetes 对于 API Server 的请求主要分为两大部分：内部和外部。<br>内部是指在 master 节点使用 kubectl 命令进行操作，这时，因为是在节点内部操作，因此并不会使用安全端口，直接采用 localhost 这个 ip 上的非安全端口进行访问。<br>而对于 API Server 的外部请求调用（包括 Pod 和 Rest 请求），则需要使用安全端口进行访问。通过安全端口的请求，需要进行严格的三层校验才能调用成功。这就通过确保只执行权限内允许的操作保证了集群操作的安全性。<br>关于每个部分的详细介绍，会单独抽成三部分继续分解。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2019-04-25-k8s-api-server-security/" title="Kubernetes学习笔记——基于API Server的安全机制浅析" target="_blank" rel="external">https://study4.fun/2019-04-25-k8s-api-server-security/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2019-05-17-go-basic/" title="Go学习笔记——基础知识"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2018-09-09-config-dns/" title="校园网下OpenWrt配置DNS"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2021 Mii Wang
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="publishby">
+        	<a href="http://www.beian.miit.gov.cn/"  target="_blank">京ICP备19042323号</a>
+        </div>
+        <div class="publishby">
+            Driven by <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank">又拍云</a>
+            
+                <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank"><img src="/youpai.png" width="60px;"/></a>
+              
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: '165b9a4f859500042709',
+    clientSecret: '4af45adbac4941cdd0612094d67b828f1591c351',
+    repo: 'gitalk',
+    owner: 'MiiW',
+    admin: ['MiiW'],
+    id: md5(location.pathname),
+    distractionFreeMode: true
+  })
+  gitalk.render('comments')
+  </script>
+
+      
+
+
+
+
+
+    <script defer type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-167751203-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+
+    <script defer>
+var _hmt = _hmt || [];
+(function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0b7f2a921931e979ba955fb87b85e72d";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+</body>
+</html>
