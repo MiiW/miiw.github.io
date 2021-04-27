@@ -28,7 +28,7 @@
 <meta property="og:description" content="引言一开始就把博客写作叫成一个工作流，是因为我们很多时候在写博客的时候，懒惰的很大一部分原因是因为觉得麻烦。当你在使用 hexo 这种静态博客的时候，难免会觉得写作是一件很繁琐的时间，首先会受限于写作环境，其次每次写作都需要“写 md –&gt; 插入图片上传 –&gt; 预览后编译 –&gt; 推送到 pages”。因为工作的原因，用了很久的语雀，感觉语雀的写作体验和管理都是很棒的。那么，如何拥">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-01-02T15:47:00.000Z">
-<meta property="article:modified_time" content="2021-04-27T15:21:00.427Z">
+<meta property="article:modified_time" content="2021-04-27T15:28:03.929Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="杂项">
 <meta name="twitter:card" content="summary">
@@ -46,8 +46,6 @@
   
   
   
-  
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
   
 <meta name="generator" content="Hexo 4.2.0"></head>
 
@@ -446,7 +444,7 @@
     
   <section id="comments">
   	
-           
+      <div id="vcomments"></div>
     
   </section>
 
@@ -558,23 +556,29 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
    
     
-  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
-  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
   <script type="text/javascript">
-    var gitalk = new Gitalk({
-      clientID: '17399b604be73a5e3bce',
-      clientSecret: '939abf18dd7dca8ea02dc1fe9cbbea0e3a5f0b8d',
-      repo: 'gitalk',
-      owner: 'MiiW',
-      proxy: 'https://bold-dream-190c.miiw.workers.dev/https://github.com/login/oauth/access_token',
-      admin: ['MiiW'],
-      id: md5(location.pathname),
-      distractionFreeMode: true
-    })
-    gitalk.render('comments')
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '欢迎留下评论',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
   </script>
-        
+
+     
 
 
 

@@ -28,7 +28,7 @@
 <meta property="og:description" content="一. 基础知识1.1 体系结构系统调用：内核的接口应用程序既可以使用共用函数库，也可以使用系统调用 1.2 登录登录项的组成：登录名、加密口令、数字用户 ID（UID）、数字组 ID（GID）、注释字段、起始目录、shell 程序 1.3 目录每个进程都有一个工作目录（当前工作目录），相对路径都从工作目录开始解析进程可以使用 chdir 函数更改工作目录 1.4 输入输出1.4.1 文件描述符文件">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-08-15T15:55:00.000Z">
-<meta property="article:modified_time" content="2021-04-27T15:21:00.471Z">
+<meta property="article:modified_time" content="2021-04-27T15:28:03.977Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="读书笔记">
 <meta property="article:tag" content="Unix">
@@ -47,8 +47,6 @@
   
   
   
-  
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
   
 <meta name="generator" content="Hexo 4.2.0"></head>
 
@@ -468,7 +466,7 @@
     
   <section id="comments">
   	
-           
+      <div id="vcomments"></div>
     
   </section>
 
@@ -580,23 +578,29 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
    
     
-  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
-  <script src="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
   <script type="text/javascript">
-    var gitalk = new Gitalk({
-      clientID: '17399b604be73a5e3bce',
-      clientSecret: '939abf18dd7dca8ea02dc1fe9cbbea0e3a5f0b8d',
-      repo: 'gitalk',
-      owner: 'MiiW',
-      proxy: 'https://bold-dream-190c.miiw.workers.dev/https://github.com/login/oauth/access_token',
-      admin: ['MiiW'],
-      id: md5(location.pathname),
-      distractionFreeMode: true
-    })
-    gitalk.render('comments')
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '欢迎留下评论',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
   </script>
-        
+
+     
 
 
 
