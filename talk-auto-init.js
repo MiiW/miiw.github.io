@@ -19,10 +19,6 @@ const config = {
 
 const api = 'https://api.github.com/repos/' + config.username + '/' + config.repo + '/issues';
 
-/**
-* 读取 sitemap 文件
-* 远程 sitemap 文件获取可参考 https://www.npmjs.com/package/sitemapper
-*/
 const sitemapXmlReader = (file) => {
     try {
         const data = fs.readFileSync(file, 'utf8');
