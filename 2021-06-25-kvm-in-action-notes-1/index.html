@@ -19,16 +19,24 @@
   <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
   
   
-  <title>归档: 2018 | 学而时思之</title>
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Study4Fun">
-<meta property="og:url" content="https://study4.fun/archives/2018/">
+  <title>《KVM实战》读书笔记（1） | 学而时思之</title>
+  <meta name="description" content="虚拟化分类技术手段    软件虚拟化 硬件虚拟化    含义 纯软件的环境模拟执行客户机的指令，如 QEMU 硬件本身提供能力让客户机指令独立执行，不需要 VMM 截获重定向，如 Intel VT   实现 二进制翻译（不同指令集的二进制代码转换）     （x86 实现）提供略微受限的硬件运行环境（non-root mode），无需翻译再执行 VMM 运行在 root mode，具备硬件的完整访">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《KVM实战》读书笔记（1）">
+<meta property="og:url" content="https://study4.fun/2021-06-25-kvm-in-action-notes-1/">
 <meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="虚拟化分类技术手段    软件虚拟化 硬件虚拟化    含义 纯软件的环境模拟执行客户机的指令，如 QEMU 硬件本身提供能力让客户机指令独立执行，不需要 VMM 截获重定向，如 Intel VT   实现 二进制翻译（不同指令集的二进制代码转换）     （x86 实现）提供略微受限的硬件运行环境（non-root mode），无需翻译再执行 VMM 运行在 root mode，具备硬件的完整访">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1624633915921-7254d4c6-8a52-40d1-a555-454e3ae980e4.png#clientId=u54e1a765-b574-4&from=paste&height=1017&id=ud6368260&margin=%5Bobject%20Object%5D&name=image.png&originHeight=2033&originWidth=1920&originalType=binary%E2%88%B6=2&size=353391&status=done&style=none&taskId=u816778ac-38b6-4b74-8778-85719e968a7&width=960">
+<meta property="article:published_time" content="2021-06-25T14:39:00.000Z">
+<meta property="article:modified_time" content="2021-06-25T16:44:08.013Z">
 <meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="读书笔记">
+<meta property="article:tag" content="KVM">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1624633915921-7254d4c6-8a52-40d1-a555-454e3ae980e4.png#clientId=u54e1a765-b574-4&from=paste&height=1017&id=ud6368260&margin=%5Bobject%20Object%5D&name=image.png&originHeight=2033&originWidth=1920&originalType=binary%E2%88%B6=2&size=353391&status=done&style=none&taskId=u816778ac-38b6-4b74-8778-85719e968a7&width=960">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://study4.fun/archives/2018/index.html">
+  <link rel="canonical" href="https://study4.fun/2021-06-25-kvm-in-action-notes-1/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
   
@@ -317,59 +325,235 @@
 
   
   
+<meta name="referrer" content="no-referrer" />
 <main class="main" role="main">
-  	<article class="content article article-archives article-type-list" itemscope="">
-	    <header class="article-header">
-	      <h1 itemprop="title">归档: 2018</h1>
-	      <p class="text-muted">共 2 篇文章</p>
-	    </header>
-	    <div class="article-body">
-	      
-  
-  
+  <div class="content">
+  <article id="post-《KVM实战》读书笔记（1）" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
-    
+    <div class="article-header">
       
+        
+  
+    <h1 class="article-title" itemprop="name">
+      《KVM实战》读书笔记（1）
+    </h1>
+  
+
       
-      <section class="panel panel-default b-no">
-        <div class="panel-heading" role="tab">
-          <h3 class="panel-title">
-            <a data-toggle="collapse" href="#collapse2018" aria-expanded="true">
-              <i class="icon icon-calendar-plus text-active"></i><i class="icon icon-calendar-minus text"></i>
-              2018
-            </a>
-            <!-- <a href="/archives/2018" class="archive-year">2018</a> -->
-          </h3>
-        </div>
-        <div id="collapse2018" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2018">
-        <div class="panel-body">
-          <div class="collection">
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021-06-25-kvm-in-action-notes-1/" class="article-date">
+	  <time datetime="2021-06-25T14:39:00.000Z" itemprop="datePublished">2021-06-25</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/KVM/" rel="tag">KVM</a>, <a class="article-tag-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021-06-25-kvm-in-action-notes-1/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.1k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="虚拟化"><a href="#虚拟化" class="headerlink" title="虚拟化"></a>虚拟化</h2><h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><h4 id="技术手段"><a href="#技术手段" class="headerlink" title="技术手段"></a>技术手段</h4><table>
+<thead>
+<tr>
+<th></th>
+<th>软件虚拟化</th>
+<th>硬件虚拟化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>含义</td>
+<td>纯软件的环境模拟执行客户机的指令，如 QEMU</td>
+<td>硬件本身提供能力让客户机指令独立执行，不需要 VMM 截获重定向，如 Intel VT</td>
+</tr>
+<tr>
+<td>实现</td>
+<td>二进制翻译（不同指令集的二进制代码转换）</td>
+<td></td>
+</tr>
+</tbody></table>
+<ul>
+<li>（x86 实现）提供略微受限的硬件运行环境（non-root mode），无需翻译再执行</li>
+<li>VMM 运行在 root mode，具备硬件的完整访问控制权限；仅在部分情况下，客户机指令需要被 VMM 截获处理再返回 non-root mode<br>|<br>| 优缺点 | 虚拟化性能差，软件复杂度高；支持各种平台（二进制翻译支持） | 性能接近于原生系统，简化了 VMM 的设计结构 |</li>
+</ul>
+<h4 id="虚拟化程度"><a href="#虚拟化程度" class="headerlink" title="虚拟化程度"></a>虚拟化程度</h4><p>半虚拟化：</p>
+<ul>
+<li>客户机意识到自己运行在虚拟化环境内，需做相应的修改配合 VMM</li>
+<li>性能提升，VMM 软件复杂度降低；不太依赖硬件虚拟化的支持，支持跨平台</li>
+<li>virtio，宿主机/VMM 和客户机需要相应的安装驱动</li>
+</ul>
+<p>全虚拟化：</p>
+<ul>
+<li>客户机 OS 无改动，需要模拟完整的、和物理平台一模一样的平台提供给客户机</li>
+<li>增加了 VMM 的复杂度，软件实现的全虚拟化性能差</li>
+<li>硬件虚拟化辅助的全虚拟化性能反超半虚拟化</li>
+</ul>
+<h4 id="软件框架"><a href="#软件框架" class="headerlink" title="软件框架"></a>软件框架</h4><p><strong>判断标准</strong>：VMM 是直接位于硬件之上还是在一个宿主操作系统上<br>Type1：</p>
+<ul>
+<li>native/bare-metal hypervisor，直接控制硬件资源及客户机</li>
+<li>Xen, VMware Esx</li>
+</ul>
+<p>Type2：</p>
+<ul>
+<li>运行在宿主机 OS 上，通常就是以进程的形式存在</li>
+<li>KVM, VMWare Workstation</li>
+</ul>
+<h3 id="硬件虚拟化"><a href="#硬件虚拟化" class="headerlink" title="硬件虚拟化"></a>硬件虚拟化</h3><h4 id="CPU-虚拟化"><a href="#CPU-虚拟化" class="headerlink" title="CPU 虚拟化"></a>CPU 虚拟化</h4><h4 id="内存虚拟化"><a href="#内存虚拟化" class="headerlink" title="内存虚拟化"></a>内存虚拟化</h4><h4 id="I-O-虚拟化"><a href="#I-O-虚拟化" class="headerlink" title="I/O 虚拟化"></a>I/O 虚拟化</h4><h2 id="KVM-介绍"><a href="#KVM-介绍" class="headerlink" title="KVM 介绍"></a>KVM 介绍</h2><h3 id="定位"><a href="#定位" class="headerlink" title="定位"></a>定位</h3><ul>
+<li>采用 *<em>硬件虚拟化 *</em>的 *<em>全虚拟化 *</em>解决方案</li>
+<li>基于内核，通过加载模块使内核本身成为 Hypervisor</li>
+<li>Type2 Hypervisor</li>
+</ul>
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><h4 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h4><ul>
+<li>客户机物理内存就是宿主机内普通进程的虚拟内存，这意味着 linux 内存管理的机制全部可以应用到客户机内存管理上</li>
+<li>早期实现：GVA-&gt;GPA-&gt;HVA-&gt;HPA；GVA-&gt;GPA：页表，GPA-&gt;HPA：影子页表</li>
+<li>现在的实现：通过硬件识别的数据结构算出 GPA 到 HPA 的转换关系，如 EPT/NPT</li>
+</ul>
+<h4 id="存储和镜像"><a href="#存储和镜像" class="headerlink" title="存储和镜像"></a>存储和镜像</h4><ul>
+<li>可使用 linux 支持的任意存储来存虚拟机镜像，支持按需分配、稀疏存储</li>
+<li>原生磁盘格式为 qcow2，支持快照、压缩、加密</li>
+</ul>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><ul>
+<li>实时迁移，用户透明，支持状态存储及恢复</li>
+<li>支持混合虚拟化（virtio，pci passthrough）</li>
+<li>资源可伸缩，95%原生性能</li>
+</ul>
+<h3 id="功能框架"><a href="#功能框架" class="headerlink" title="功能框架"></a>功能框架</h3><p><img src="https://cdn.nlark.com/yuque/0/2021/png/379285/1624633915921-7254d4c6-8a52-40d1-a555-454e3ae980e4.png#clientId=u54e1a765-b574-4&from=paste&height=1017&id=ud6368260&margin=%5Bobject%20Object%5D&name=image.png&originHeight=2033&originWidth=1920&originalType=binary%E2%88%B6=2&size=353391&status=done&style=none&taskId=u816778ac-38b6-4b74-8778-85719e968a7&width=960" alt="image.png"></p>
+<h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>一个 Guest VM 对应 Host 中的一个 qemu 进程，一个 Guest vCpu 对应进程中的一个 qemu 线程</li>
+<li>IO 处理线程是单独的，在一个线程组内</li>
+<li>客户机（进程）由内核调度，借用<strong>进程调度</strong>的手段实现不同客户机的<strong>权限限定</strong>和<strong>优先级</strong>等功能</li>
+<li>QEMU 实现硬件设备模拟（透传除外），截获并对物理设备驱动进行操作</li>
+</ul>
+<h4 id="核心组成"><a href="#核心组成" class="headerlink" title="核心组成"></a>核心组成</h4><h5 id="KVM-内核模块"><a href="#KVM-内核模块" class="headerlink" title="KVM 内核模块"></a>KVM 内核模块</h5><ul>
+<li>主要负责 CPU 和内存的虚拟化，所有 Guest 与唯一的内核模块进行交互</li>
+<li>分为处理器架构无关(kvm)和有关(kvm_intel)的两个部分</li>
+</ul>
+<h5 id="QEMU-用户态工具"><a href="#QEMU-用户态工具" class="headerlink" title="QEMU 用户态工具"></a>QEMU 用户态工具</h5><ul>
+<li>提供设备模拟的功能，ioctl syscall 与内核态 kvm 模块交互</li>
+<li>qemu 本身具备完整的虚拟机实现（cpu/mem 虚拟化）</li>
+<li>支持 virtio 协议的设备模拟，实现了 virtio 的虚拟化后端</li>
+</ul>
+<h4 id="其他相关组件"><a href="#其他相关组件" class="headerlink" title="其他相关组件"></a>其他相关组件</h4><ul>
+<li>vhost-net：替代 virtio-net</li>
+<li>open vswitch：多层虚拟交换机</li>
+<li>dpdk<ul>
+<li>网络应用中数据包的高性能处理，运行在用户空间，绕过内核协议栈对数据包的处理</li>
+<li>提升小包等网络处理能力，可与 vhost-uset 结合使用</li>
+</ul>
+</li>
+<li>spdk：高存储性能支持，驱动运行在用户态实现零拷贝、轮询替代传统的中断模式、无锁设计</li>
+<li>管理工具<ul>
+<li>libvirt：kvm 虚拟化管理的工具和应用程序接口，事实上的虚拟化接口标准</li>
+<li>virsh：命令行工具</li>
+<li>virt-manager：图形化管理软件</li>
+<li>openstack：云管理平台</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
     
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2021-06-25-kvm-in-action-notes-1/" title="《KVM实战》读书笔记（1）" target="_blank" rel="external">https://study4.fun/2021-06-25-kvm-in-action-notes-1/</a>
+    </li>
     
-<a href="/2018-09-09-config-dns/" class="collection-item" target="_blank" itemprop="url">
-  <time datetime="2018-09-09T05:55:00.000Z" itemprop="datePublished">2018-09-09</time>
-  <span>&nbsp;&nbsp;&nbsp;</span> 校园网下OpenWrt配置DNS
-</a>
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
 
 
   
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
     
     
+    <li class="next">
+      <a href="/2021-04-25-analysis-of-kubelet-imagegc/" title="Kubelet Image GC原理分析"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
     
-<a href="/2018-09-09-k8s-pod-scheduling/" class="collection-item" target="_blank" itemprop="url">
-  <time datetime="2018-09-09T05:55:00.000Z" itemprop="datePublished">2018-09-09</time>
-  <span>&nbsp;&nbsp;&nbsp;</span> Kubernetes学习笔记——Pod调度
-</a>
-
-
+    
+  </ul>
   
   
-    </div></div></div></section>
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
   
 
-	    </div>
-  	</article>
-  	 	
+
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -435,6 +619,39 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '欢迎留下评论',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
 
 
 
