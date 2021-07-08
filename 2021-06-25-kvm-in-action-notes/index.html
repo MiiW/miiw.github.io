@@ -29,8 +29,11 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1624633915921-7254d4c6-8a52-40d1-a555-454e3ae980e4.png#clientId=u54e1a765-b574-4&from=paste&height=1017&id=ud6368260&margin=%5Bobject%20Object%5D&name=image.png&originHeight=2033&originWidth=1920&originalType=binary%E2%88%B6=2&size=353391&status=done&style=none&taskId=u816778ac-38b6-4b74-8778-85719e968a7&width=960">
 <meta property="og:image" content="https://cdn.nlark.com/yuque/0/2021/png/379285/1624977807324-7ab1a21e-419d-470b-921f-138c087ad366.png#clientId=ub242abda-aa54-4&from=paste&height=308&id=u9efea914&margin=%5Bobject%20Object%5D&name=image.png&originHeight=381&originWidth=588&originalType=binary%E2%88%B6=2&size=358803&status=done&style=none&taskId=u55155de4-5b96-4eb6-8d71-40d80f29c9b&width=475">
+<meta property="og:image" content="https://libvirt.org/manpages/virsh.html">
+<meta property="og:image" content="https://virt-manager.org/">
+<meta property="og:image" content="https://linux.die.net/man/1/virt-viewer">
 <meta property="article:published_time" content="2021-06-25T14:39:00.000Z">
-<meta property="article:modified_time" content="2021-07-02T15:12:34.418Z">
+<meta property="article:modified_time" content="2021-07-08T06:24:55.920Z">
 <meta property="article:author" content="Mii Wang">
 <meta property="article:tag" content="读书笔记">
 <meta property="article:tag" content="KVM">
@@ -373,10 +376,10 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021-06-25-kvm-in-action-notes/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.6k(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.2k(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 8(分)</span>
 	
 
       </div>
@@ -505,9 +508,34 @@
 <li>网络管理：管理物理和逻辑网络接口</li>
 <li>提供稳定可靠高效的应用程序接口</li>
 </ol>
-<p>###</p>
-<h2 id="其他-1"><a href="#其他-1" class="headerlink" title="其他"></a>其他</h2><p>新版本 qemu 编译安装的时候依赖 gcc 7.5+版本<br>​</p>
-<p>​</p>
+<h3 id="XML-配置"><a href="#XML-配置" class="headerlink" title="XML 配置"></a>XML 配置</h3><h4 id="CPU-配置"><a href="#CPU-配置" class="headerlink" title="CPU 配置"></a>CPU 配置</h4><p>vcpu：cpu 个数</p>
+<ul>
+<li>vcpu.cpuset: 指定允许执行的物理 CPU</li>
+</ul>
+<p>features：CPU 或其他硬件特性的开关<br>cpu.mode:</p>
+<ul>
+<li>custom:个性化设置</li>
+<li>host-model:根据物理 CPU 特性选择一个最接近的标准 CPU 型号</li>
+<li>host-passthrough：暴露 CPU 物理特性给 Guest</li>
+</ul>
+<p>cputune：绑核、CPU 时间加权配置等等</p>
+<h4 id="内存配置"><a href="#内存配置" class="headerlink" title="内存配置"></a>内存配置</h4><p>memory:可使用内存的最大值<br>currentMemory：启动时分配的内存<br>devices.memballoon:内存 balloning 调节</p>
+<h4 id="Guest-OS-和-Boot-配置"><a href="#Guest-OS-和-Boot-配置" class="headerlink" title="Guest OS 和 Boot 配置"></a>Guest OS 和 Boot 配置</h4><p>os.tpye:GuestOS 类型，kvm 中为 hvm<br>os.boot：guest vm 启动设备配置</p>
+<h4 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h4><p>interface.type: bridge，桥接网络；network，NAT 网络；user，用户模式网络；hostdev，设备直接分配给 Guest</p>
+<h4 id="存储配置"><a href="#存储配置" class="headerlink" title="存储配置"></a>存储配置</h4><p>disk.type: file/block（块设备）/dir/network,磁盘来源类型<br>disk.device:floppy/disk（默认值）/cdrom/lun，Guest 内使用<br>disk.source:磁盘来源，和 type 配合使用<br>disk.driver:hypervisor 提供的磁盘驱动，name=qemu<br>disk.target:暴露给 Guest 的总线类型和设备名称<br>disk.address:Guest 内的 PCI 总线地址</p>
+<h4 id="其他配置"><a href="#其他配置" class="headerlink" title="其他配置"></a>其他配置</h4><h5 id="域配置"><a href="#域配置" class="headerlink" title="域配置"></a>域配置</h5><p>domain.type：虚拟化类型,xen/kvm/qemu/lxc…<br>domain.id: guest 唯一 id<br>domain.name/uuid/…: 元数据</p>
+<h5 id="QEMU-模拟器配置"><a href="#QEMU-模拟器配置" class="headerlink" title="QEMU 模拟器配置"></a>QEMU 模拟器配置</h5><p>device.emulator:使用的设备模型模拟器，绝对路径</p>
+<h5 id="图形显示"><a href="#图形显示" class="headerlink" title="图形显示"></a>图形显示</h5><p>devices.graphics:连接 Guest 的图形显示方式，vnc/sdl/rdp…</p>
+<h5 id="声卡-显卡"><a href="#声卡-显卡" class="headerlink" title="声卡/显卡"></a>声卡/显卡</h5><p>devices.sound:模拟声卡<br>devices.video:模拟显卡，vram 代表显存，heads 屏幕序号</p>
+<h5 id="串口和控制台"><a href="#串口和控制台" class="headerlink" title="串口和控制台"></a>串口和控制台</h5><p>devices.serial:串口，target 指 Guest 内串口编号，source 指 Host 内的虚拟 pts 终端号<br>devices.console:控制台配置，type=serial，Guest 内类型</p>
+<h5 id="输入设备"><a href="#输入设备" class="headerlink" title="输入设备"></a>输入设备</h5><p>devices.input：qemu 模拟的输入设备，mouse/keyboard/tablet</p>
+<h5 id="PCI-控制器"><a href="#PCI-控制器" class="headerlink" title="PCI 控制器"></a>PCI 控制器</h5><p>domain.controller:类型有 usb/pci/virtio-serial</p>
+<h3 id="libvirt-api"><a href="#libvirt-api" class="headerlink" title="libvirt api"></a>libvirt api</h3><p>Hypervisor 连接（virConnect）<br>域管理（virDomain）<br>节点管理（virNode）<br>网络管理（virNetowrk）<br>存储卷管理（virStorageVol）：域的镜像文件管理<br>存储池管理（virStoragePool）：本地、网络共享、iSCSI 文件系统以及 LVM 分区管理<br>事件管理（virEvent）：事件机制支持，注册后事件发生后可收到通知<br>数据流管理（virStream）：数据流传输</p>
+<h3 id="libvirt-uri"><a href="#libvirt-uri" class="headerlink" title="libvirt uri"></a>libvirt uri</h3><h4 id="本地"><a href="#本地" class="headerlink" title="本地"></a>本地</h4><p><strong>格式</strong>：driver[+transport]:///[path][extral-param]<br><strong>示例</strong>：<br>qemu:///session<br>qemu+unix:///session<br>qemu:///system<br>qemu+unix:///system</p>
+<h4 id="远程"><a href="#远程" class="headerlink" title="远程"></a>远程</h4><p><strong>格式</strong>：driver[+transport]://[uesr@][host][:port]/[path][extral-param]<br><strong>示例</strong>：<br>qemu+ssh://root@example.com/system<br>qemu+ssh://user@example.com/session<br>qemu://example.com/system(TLS 连接)<br>qemu+tcp//example.com/system(非加密 TCP)</p>
+<h4 id="其他工具"><a href="#其他工具" class="headerlink" title="其他工具"></a>其他工具</h4><p>virsh: 相关操作命令[<img src="https://libvirt.org/manpages/virsh.html" alt="https://libvirt.org/manpages/virsh.html">]<br>virt manager:图形化管理[<img src="https://virt-manager.org/" alt="https://virt-manager.org/">]<br>virt viewer:图形化控制台[<img src="https://linux.die.net/man/1/virt-viewer" alt="https://linux.die.net/man/1/virt-viewer">]</p>
+<h2 id="其他-1"><a href="#其他-1" class="headerlink" title="其他"></a>其他</h2><h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><p>新版本 qemu 编译安装的时候依赖 gcc 7.5+版本</p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>设备模型<br>桥接网络和 NAT 网络的区别<br>用户模式网络：qemu 软件模拟的网络协议栈，宿主机中没有虚拟网络接口连接到网桥<br>istio-iptables<br>​</p>
 <h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p><a href="https://www.cnblogs.com/music-liang/p/12900457.html" target="_blank" rel="noopener">https://www.cnblogs.com/music-liang/p/12900457.html</a></p>
 
       
