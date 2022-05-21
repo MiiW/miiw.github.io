@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
+  
+  
+  <title>Kubelet Image GC原理分析 | 学而时思之</title>
+  <meta name="description" content="Image GC 是什么？Image GC 是 kubelet 的镜像清理功能，用于在磁盘空间不足的情况下清除不需要的镜像，释放磁盘空间，保证 Pod 能正常启动运行。 Image GC 如何使用？Kubelet 默认开启，通过 kubele 启动配置中的 ImageGCPolicy 控制。ImageGCPolicy 有三个设置参数：  ImageGCHighThresholdPercent：触发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubelet Image GC原理分析">
+<meta property="og:url" content="https://study4.fun/2021-04-25-analysis-of-kubelet-imagegc/">
+<meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="Image GC 是什么？Image GC 是 kubelet 的镜像清理功能，用于在磁盘空间不足的情况下清除不需要的镜像，释放磁盘空间，保证 Pod 能正常启动运行。 Image GC 如何使用？Kubelet 默认开启，通过 kubele 启动配置中的 ImageGCPolicy 控制。ImageGCPolicy 有三个设置参数：  ImageGCHighThresholdPercent：触发">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-04-25T07:48:00.000Z">
+<meta property="article:modified_time" content="2022-05-21T07:33:16.780Z">
+<meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://study4.fun/2021-04-25-analysis-of-kubelet-imagegc/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.svg" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/MiiW" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">MiiW</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">一个普通开发者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>一个闲人的漫思</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%87%E5%BF%98%E5%BD%95/">备忘录</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/">日记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/API-Server/" style="font-size: 13px;">API Server</a> <a href="/tags/DNS/" style="font-size: 13px;">DNS</a> <a href="/tags/Golang/" style="font-size: 13px;">Golang</a> <a href="/tags/IPV6/" style="font-size: 13px;">IPV6</a> <a href="/tags/KVM/" style="font-size: 13px;">KVM</a> <a href="/tags/Kubernetes/" style="font-size: 14px;">Kubernetes</a> <a href="/tags/Pod/" style="font-size: 13.25px;">Pod</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/cgroup/" style="font-size: 13px;">cgroup</a> <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" style="font-size: 13.75px;">学习笔记</a> <a href="/tags/%E5%AE%B9%E5%99%A8/" style="font-size: 13.5px;">容器</a> <a href="/tags/%E6%9D%82%E9%A1%B9/" style="font-size: 13.25px;">杂项</a> <a href="/tags/%E7%9B%91%E6%8E%A7/" style="font-size: 13px;">监控</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13.25px;">网络配置</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 13px;">设计模式</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13.75px;">读书笔记</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/">2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2022-05-13-kubernetes-pod-monitoring-1/" class="title">Kubernetes容器监控原理和源码解析（一）——API和数据来源</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-05-13T14:54:00.000Z" itemprop="datePublished">2022-05-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-06-25-kvm-in-action-notes/" class="title">《KVM实战》读书笔记</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-25T14:39:00.000Z" itemprop="datePublished">2021-06-25</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-04-25-analysis-of-kubelet-imagegc/" class="title">Kubelet Image GC原理分析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-04-25T07:48:00.000Z" itemprop="datePublished">2021-04-25</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-01-02-blogs-workflow/" class="title">博客写作的工作流</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-01-02T15:47:00.000Z" itemprop="datePublished">2021-01-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020-10-30-cgroup-startings/" class="title">CGroup初探</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-10-30T12:55:00.000Z" itemprop="datePublished">2020-10-30</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<meta name="referrer" content="no-referrer" />
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kubelet Image GC原理分析" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kubelet Image GC原理分析
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021-04-25-analysis-of-kubelet-imagegc/" class="article-date">
+	  <time datetime="2021-04-25T07:48:00.000Z" itemprop="datePublished">2021-04-25</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021-04-25-analysis-of-kubelet-imagegc/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 3k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 14(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="Image-GC-是什么？"><a href="#Image-GC-是什么？" class="headerlink" title="Image GC 是什么？"></a>Image GC 是什么？</h2><p>Image GC 是 kubelet 的镜像清理功能，用于在磁盘空间不足的情况下清除不需要的镜像，释放磁盘空间，保证 Pod 能正常启动运行。</p>
+<h2 id="Image-GC-如何使用？"><a href="#Image-GC-如何使用？" class="headerlink" title="Image GC 如何使用？"></a>Image GC 如何使用？</h2><p>Kubelet 默认开启，通过 kubele 启动配置中的 ImageGCPolicy 控制。ImageGCPolicy 有三个设置参数：</p>
+<ul>
+<li>ImageGCHighThresholdPercent：触发 gc 的阈值，超过该值将会执行 gc，设置为 100 时，gc 不启动。</li>
+<li>ImageGCLowThresholdPercent：ImageGC 执行空间空间的目标值，gc 触发后，将会将磁盘占用率降至该值以下；</li>
+<li>ImageMinimumGCAge：最短 GC 年龄（即距离首次被探测到的间隔），小于该阈值时不会被 gc。</li>
+</ul>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><h3 id="ImageGC-的初始化与启动"><a href="#ImageGC-的初始化与启动" class="headerlink" title="ImageGC 的初始化与启动"></a>ImageGC 的初始化与启动</h3><p>在 kubelet 启动时，ImageGC 的启动在 BirthCry 执行完成之后。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(kl *Kubelet)</span> <span class="title">StartGarbageCollection</span><span class="params">()</span></span> &#123;</span><br><span class="line">	loggedContainerGCFailure := <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// container gc流程，省略</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ImageGCHighThresholdPercent设置为100时，关闭image gc</span></span><br><span class="line">	<span class="keyword">if</span> kl.kubeletConfiguration.ImageGCHighThresholdPercent == <span class="number">100</span> &#123;</span><br><span class="line">		klog.V(<span class="number">2</span>).Infof(<span class="string">"ImageGCHighThresholdPercent is set 100, Disable image GC"</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	prevImageGCFailed := <span class="literal">false</span></span><br><span class="line">	<span class="keyword">go</span> wait.Until(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> err := kl.imageManager.GarbageCollect(); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> prevImageGCFailed &#123;</span><br><span class="line">				klog.Errorf(<span class="string">"Image garbage collection failed multiple times in a row: %v"</span>, err)</span><br><span class="line">				<span class="comment">// Only create an event for repeated failures</span></span><br><span class="line">				kl.recorder.Eventf(kl.nodeRef, v1.EventTypeWarning, events.ImageGCFailed, err.Error())</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				klog.Errorf(<span class="string">"Image garbage collection failed once. Stats initialization may not have completed yet: %v"</span>, err)</span><br><span class="line">			&#125;</span><br><span class="line">			prevImageGCFailed = <span class="literal">true</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> vLevel klog.Level = <span class="number">4</span></span><br><span class="line">			<span class="keyword">if</span> prevImageGCFailed &#123;</span><br><span class="line">				vLevel = <span class="number">1</span></span><br><span class="line">				prevImageGCFailed = <span class="literal">false</span></span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			klog.V(vLevel).Infof(<span class="string">"Image garbage collection succeeded"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;, ImageGCPeriod, wait.NeverStop)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，ImageGC 由单独的协程执行，默认的执行间隔为五分钟。当 ImageGC 首次执行失败时会打印日志，而重复失败后，会记录一个 ImageGCFailed 的事件。这意味着可以通过配置日志或者告警了解 GC 是否正常运行。<br>接下来看看 ImageGCManager 的具体实现。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ImageGCManager <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// Applies the garbage collection policy. Errors include being unable to free</span></span><br><span class="line">	<span class="comment">// enough space as per the garbage collection policy.</span></span><br><span class="line">	GarbageCollect() error</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Start async garbage collection of images.</span></span><br><span class="line">	Start()</span><br><span class="line"></span><br><span class="line">	GetImageList() ([]container.Image, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Delete all unused images.</span></span><br><span class="line">	DeleteUnusedImages() error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewImageGCManager</span><span class="params">(runtime container.Runtime, statsProvider StatsProvider, recorder record.EventRecorder, nodeRef *v1.ObjectReference, policy ImageGCPolicy, sandboxImage <span class="keyword">string</span>)</span> <span class="params">(ImageGCManager, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Validate policy.</span></span><br><span class="line">	<span class="keyword">if</span> policy.HighThresholdPercent &lt; <span class="number">0</span> || policy.HighThresholdPercent &gt; <span class="number">100</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"invalid HighThresholdPercent %d, must be in range [0-100]"</span>, policy.HighThresholdPercent)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> policy.LowThresholdPercent &lt; <span class="number">0</span> || policy.LowThresholdPercent &gt; <span class="number">100</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"invalid LowThresholdPercent %d, must be in range [0-100]"</span>, policy.LowThresholdPercent)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> policy.LowThresholdPercent &gt; policy.HighThresholdPercent &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"LowThresholdPercent %d can not be higher than HighThresholdPercent %d"</span>, policy.LowThresholdPercent, policy.HighThresholdPercent)</span><br><span class="line">	&#125;</span><br><span class="line">	im := &amp;realImageGCManager&#123;</span><br><span class="line">		runtime:       runtime,</span><br><span class="line">		policy:        policy,</span><br><span class="line">		imageRecords:  <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]*imageRecord),</span><br><span class="line">		statsProvider: statsProvider,</span><br><span class="line">		recorder:      recorder,</span><br><span class="line">		nodeRef:       nodeRef,</span><br><span class="line">		initialized:   <span class="literal">false</span>,</span><br><span class="line">		sandboxImage:  sandboxImage,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> im, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ImageGCManager 的接口非常简单，只有四个方法：</p>
+<ul>
+<li>GarbageCollect：根据定义的 ImageGCPolicy 执行具体的清理动作；</li>
+<li>Start：异步地收集镜像信息；</li>
+<li>GetImageList：获取缓存中的镜像列表；</li>
+<li>DeleteUnusedImages：删除未使用的镜像。</li>
+</ul>
+<p>ImageGCManager 在初始化时会校验 Policy 的参数合法性，然后传递运行时、监控、事件等参数。然后看看 Start 方法的逻辑：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(im *realImageGCManager)</span> <span class="title">Start</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> wait.Until(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// Initial detection make detected time "unknown" in the past.</span></span><br><span class="line">		<span class="keyword">var</span> ts time.Time</span><br><span class="line">		<span class="keyword">if</span> im.initialized &#123;</span><br><span class="line">			ts = time.Now()</span><br><span class="line">		&#125;</span><br><span class="line">		_, err := im.detectImages(ts)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			klog.Warningf(<span class="string">"[imageGCManager] Failed to monitor images: %v"</span>, err)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			im.initialized = <span class="literal">true</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;, <span class="number">5</span>*time.Minute, wait.NeverStop)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Start a goroutine periodically updates image cache.</span></span><br><span class="line">	<span class="keyword">go</span> wait.Until(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		images, err := im.runtime.ListImages()</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			klog.Warningf(<span class="string">"[imageGCManager] Failed to update image list: %v"</span>, err)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			im.imageCache.set(images)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;, <span class="number">30</span>*time.Second, wait.NeverStop)</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ImageGCManager 的 Start 方法会启动两个协程。在第一个协程内，每隔五分钟 Manager 会检查一次镜像。一旦完成一次，Manager 的状态就会被标记为已初始化。另一个协程每隔 30 秒会从容器运行时获取所有的镜像信息，更新到缓存的镜像列表中。</p>
+<h3 id="镜像信息的检测和维护"><a href="#镜像信息的检测和维护" class="headerlink" title="镜像信息的检测和维护"></a>镜像信息的检测和维护</h3><p>那么，Manager 时如何检测镜像的呢？</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(im *realImageGCManager)</span> <span class="title">detectImages</span><span class="params">(detectTime time.Time)</span> <span class="params">(sets.String, error)</span></span> &#123;</span><br><span class="line">	imagesInUse := sets.NewString()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Always consider the container runtime pod sandbox image in use</span></span><br><span class="line">	imageRef, err := im.runtime.GetImageRef(container.ImageSpec&#123;Image: im.sandboxImage&#125;)</span><br><span class="line">	<span class="keyword">if</span> err == <span class="literal">nil</span> &amp;&amp; imageRef != <span class="string">""</span> &#123;</span><br><span class="line">		imagesInUse.Insert(imageRef)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	images, err := im.runtime.ListImages()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> imagesInUse, err</span><br><span class="line">	&#125;</span><br><span class="line">	pods, err := im.runtime.GetPods(<span class="literal">true</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> imagesInUse, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Make a set of images in use by containers.</span></span><br><span class="line">	<span class="keyword">for</span> _, pod := <span class="keyword">range</span> pods &#123;</span><br><span class="line">		<span class="keyword">for</span> _, container := <span class="keyword">range</span> pod.Containers &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Pod %s/%s, container %s uses image %s(%s)"</span>, pod.Namespace, pod.Name, container.Name, container.Image, container.ImageID)</span><br><span class="line">			imagesInUse.Insert(container.ImageID)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Add new images and record those being used.</span></span><br><span class="line">	now := time.Now()</span><br><span class="line">	currentImages := sets.NewString()</span><br><span class="line">	im.imageRecordsLock.Lock()</span><br><span class="line">	<span class="keyword">defer</span> im.imageRecordsLock.Unlock()</span><br><span class="line">	<span class="keyword">for</span> _, image := <span class="keyword">range</span> images &#123;</span><br><span class="line">		klog.V(<span class="number">5</span>).Infof(<span class="string">"Adding image ID %s to currentImages"</span>, image.ID)</span><br><span class="line">		currentImages.Insert(image.ID)</span><br><span class="line"></span><br><span class="line">		<span class="comment">// New image, set it as detected now.</span></span><br><span class="line">		<span class="keyword">if</span> _, ok := im.imageRecords[image.ID]; !ok &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s is new"</span>, image.ID)</span><br><span class="line">			im.imageRecords[image.ID] = &amp;imageRecord&#123;</span><br><span class="line">				firstDetected: detectTime,</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Set last used time to now if the image is being used.</span></span><br><span class="line">		<span class="keyword">if</span> isImageUsed(image.ID, imagesInUse) &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Setting Image ID %s lastUsed to %v"</span>, image.ID, now)</span><br><span class="line">			im.imageRecords[image.ID].lastUsed = now</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s has size %d"</span>, image.ID, image.Size)</span><br><span class="line">		im.imageRecords[image.ID].size = image.Size</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Remove old images from our records.</span></span><br><span class="line">	<span class="keyword">for</span> image := <span class="keyword">range</span> im.imageRecords &#123;</span><br><span class="line">		<span class="keyword">if</span> !currentImages.Has(image) &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s is no longer present; removing from imageRecords"</span>, image)</span><br><span class="line">			<span class="built_in">delete</span>(im.imageRecords, image)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> imagesInUse, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>检测镜像的目的是找出正在使用的镜像，防止在 GC 执行的过程中被清理。同时，在此过程中，镜像的清理需要参考一些信息，这些信息也会在检测的过程中更新。<br>首先，Sandbox 镜像是一定会被判定为正在使用的镜像。接着会将所有 Pod 的所有<strong>正在运行中的容器使用</strong>的 image 加到正在使用的镜像列表中。注意，即使 Pod 有容器需要该镜像，但是该容器未处于 Running 状态，其对应的镜像也会被清理。<br>选出正在使用（即不会被清理）的镜像之后，会将容器运行时中获取到的镜像列表信息更新到 Manager 维护的镜像列表记录中。<br>查询所有新获取的镜像列表信息进行遍历，分为以下几步：</p>
+<ul>
+<li>如果是第一次被记录，那么更新该镜像的首次被探测时间为本轮探测的事件</li>
+<li>如果被前面一步被判定为“正在使用的镜像”，那么它的最新使用事件会被刷新为当前时间</li>
+<li>刷新获取到的镜像的大小</li>
+</ul>
+<p>最后，如果某个镜像已经不在容器运行时返回的镜像列表中，就会被移出 Manager 缓存的镜像探测记录。</p>
+<h3 id="ImageGC-的具体执行"><a href="#ImageGC-的具体执行" class="headerlink" title="ImageGC 的具体执行"></a>ImageGC 的具体执行</h3><p>ImageGCManager 的核心方法就是 GarbageCollect 了，主要步骤如下：首先获取 Image 对应的 Filesystem 占用信息，根据启动的配置计算出用量百分比以及需要释放的空间大小，然后开始释放。如果实际释放的空间小于目标大小，会记录 FreeDiskSpaceFailed 的 Warnning 事件。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(im *realImageGCManager)</span> <span class="title">GarbageCollect</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// Get disk usage on disk holding images.</span></span><br><span class="line">	fsStats, err := im.statsProvider.ImageFsStats()</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> capacity, available <span class="keyword">int64</span></span><br><span class="line">	<span class="keyword">if</span> fsStats.CapacityBytes != <span class="literal">nil</span> &#123;</span><br><span class="line">		capacity = <span class="keyword">int64</span>(*fsStats.CapacityBytes)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> fsStats.AvailableBytes != <span class="literal">nil</span> &#123;</span><br><span class="line">		available = <span class="keyword">int64</span>(*fsStats.AvailableBytes)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> available &gt; capacity &#123;</span><br><span class="line">		klog.Warningf(<span class="string">"available %d is larger than capacity %d"</span>, available, capacity)</span><br><span class="line">		available = capacity</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Check valid capacity.</span></span><br><span class="line">	<span class="keyword">if</span> capacity == <span class="number">0</span> &#123;</span><br><span class="line">		err := goerrors.New(<span class="string">"invalid capacity 0 on image filesystem"</span>)</span><br><span class="line">		im.recorder.Eventf(im.nodeRef, v1.EventTypeWarning, events.InvalidDiskCapacity, err.Error())</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If over the max threshold, free enough to place us at the lower threshold.</span></span><br><span class="line">	usagePercent := <span class="number">100</span> - <span class="keyword">int</span>(available*<span class="number">100</span>/capacity)</span><br><span class="line">	<span class="keyword">if</span> usagePercent &gt;= im.policy.HighThresholdPercent &#123;</span><br><span class="line">		amountToFree := capacity*<span class="keyword">int64</span>(<span class="number">100</span>-im.policy.LowThresholdPercent)/<span class="number">100</span> - available</span><br><span class="line">		klog.Infof(<span class="string">"[imageGCManager]: Disk usage on image filesystem is at %d%% which is over the high threshold (%d%%). Trying to free %d bytes down to the low threshold (%d%%)."</span>, usagePercent, im.policy.HighThresholdPercent, amountToFree, im.policy.LowThresholdPercent)</span><br><span class="line">		freed, err := im.freeSpace(amountToFree, time.Now())</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> err</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> freed &lt; amountToFree &#123;</span><br><span class="line">			err := fmt.Errorf(<span class="string">"failed to garbage collect required amount of images. Wanted to free %d bytes, but freed %d bytes"</span>, amountToFree, freed)</span><br><span class="line">			im.recorder.Eventf(im.nodeRef, v1.EventTypeWarning, events.FreeDiskSpaceFailed, err.Error())</span><br><span class="line">			<span class="keyword">return</span> err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>算出需要释放空间后是删除的镜像是怎么决定的呢？在开始执行清理时，会执行我们上面介绍的镜像探测过程。在完成镜像探测后，我们的得到的 imagesInUse 包括了 Sanbox 镜像以及 Pod 内正在与运行中容器使用的镜像。接下来，要选出清理的目标镜像，存放清理目标的数据结构叫 evictionInfo，它存放了所有不在 imagesInUse 列表内的镜像记录。接着会将这些镜像记录按照 <strong>最后使用时间</strong> 和 <strong>首次探测时间</strong> 进行一次排序，即按照 LRU 规则将最后一次使用时间较早和探测事件较早的镜像排在前面。<br>排序完之后，会遍历所有这些镜像：如果是镜像最后一次使用事件没有删除触发时间早（即刚刚刷新了最后使用时间），则不会删除。同时，如果该镜像首次被探测到的时间差小于配置的最小 GC 间隔（即刚加入到缓存记录中），也不会删除。否则，就会依序删除这些镜像，删除完之后会从探测记录中删除该镜像同时累加 已经释放的空间值 spaceFreed。如果 spaceFreed 不小于<strong>目标释放的空间</strong>，则本轮的清理正常结束。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(im *realImageGCManager)</span> <span class="title">freeSpace</span><span class="params">(bytesToFree <span class="keyword">int64</span>, freeTime time.Time)</span> <span class="params">(<span class="keyword">int64</span>, error)</span></span> &#123;</span><br><span class="line">	imagesInUse, err := im.detectImages(freeTime)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	im.imageRecordsLock.Lock()</span><br><span class="line">	<span class="keyword">defer</span> im.imageRecordsLock.Unlock()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Get all images in eviction order.</span></span><br><span class="line">	images := <span class="built_in">make</span>([]evictionInfo, <span class="number">0</span>, <span class="built_in">len</span>(im.imageRecords))</span><br><span class="line">	<span class="keyword">for</span> image, record := <span class="keyword">range</span> im.imageRecords &#123;</span><br><span class="line">		<span class="keyword">if</span> isImageUsed(image, imagesInUse) &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s is being used"</span>, image)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		images = <span class="built_in">append</span>(images, evictionInfo&#123;</span><br><span class="line">			id:          image,</span><br><span class="line">			imageRecord: *record,</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	sort.Sort(byLastUsedAndDetected(images))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Delete unused images until we've freed up enough space.</span></span><br><span class="line">	<span class="keyword">var</span> deletionErrors []error</span><br><span class="line">	spaceFreed := <span class="keyword">int64</span>(<span class="number">0</span>)</span><br><span class="line">	<span class="keyword">for</span> _, image := <span class="keyword">range</span> images &#123;</span><br><span class="line">		klog.V(<span class="number">5</span>).Infof(<span class="string">"Evaluating image ID %s for possible garbage collection"</span>, image.id)</span><br><span class="line">		<span class="comment">// Images that are currently in used were given a newer lastUsed.</span></span><br><span class="line">		<span class="keyword">if</span> image.lastUsed.Equal(freeTime) || image.lastUsed.After(freeTime) &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s has lastUsed=%v which is &gt;= freeTime=%v, not eligible for garbage collection"</span>, image.id, image.lastUsed, freeTime)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Avoid garbage collect the image if the image is not old enough.</span></span><br><span class="line">		<span class="comment">// In such a case, the image may have just been pulled down, and will be used by a container right away.</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> freeTime.Sub(image.firstDetected) &lt; im.policy.MinAge &#123;</span><br><span class="line">			klog.V(<span class="number">5</span>).Infof(<span class="string">"Image ID %s has age %v which is less than the policy's minAge of %v, not eligible for garbage collection"</span>, image.id, freeTime.Sub(image.firstDetected), im.policy.MinAge)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Remove image. Continue despite errors.</span></span><br><span class="line">		klog.Infof(<span class="string">"[imageGCManager]: Removing image %q to free %d bytes"</span>, image.id, image.size)</span><br><span class="line">		err := im.runtime.RemoveImage(container.ImageSpec&#123;Image: image.id&#125;)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			deletionErrors = <span class="built_in">append</span>(deletionErrors, err)</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">delete</span>(im.imageRecords, image.id)</span><br><span class="line">		spaceFreed += image.size</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> spaceFreed &gt;= bytesToFree &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(deletionErrors) &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> spaceFreed, fmt.Errorf(<span class="string">"wanted to free %d bytes, but freed %d bytes space with errors in image deletion: %v"</span>, bytesToFree, spaceFreed, errors.NewAggregate(deletionErrors))</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> spaceFreed, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="磁盘驱逐与-ImageGC"><a href="#磁盘驱逐与-ImageGC" class="headerlink" title="磁盘驱逐与 ImageGC"></a>磁盘驱逐与 ImageGC</h3><p>除了上述 GC 逻辑外，实际上还有额外的 ImageGC 触发条件。在运行中，偶尔会遇到 ImageGCHighThresholdPercent 被设置为 100 但还是有镜像被清理的情况。我们反过来看下在上文提到的 ImageGC 的接口，可以看到 DeleteUnusedImages 是个 public 方法。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">buildSignalToNodeReclaimFuncs</span><span class="params">(imageGC ImageGC, containerGC ContainerGC, withImageFs <span class="keyword">bool</span>)</span> <span class="title">map</span>[<span class="title">evictionapi</span>.<span class="title">Signal</span>]<span class="title">nodeReclaimFuncs</span></span> &#123;</span><br><span class="line">	signalToReclaimFunc := <span class="keyword">map</span>[evictionapi.Signal]nodeReclaimFuncs&#123;&#125;</span><br><span class="line">	<span class="comment">// usage of an imagefs is optional</span></span><br><span class="line">	<span class="keyword">if</span> withImageFs &#123;</span><br><span class="line">		<span class="comment">// with an imagefs, nodefs pressure should just delete logs</span></span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalNodeFsAvailable] = nodeReclaimFuncs&#123;&#125;</span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalNodeFsInodesFree] = nodeReclaimFuncs&#123;&#125;</span><br><span class="line">		<span class="comment">// with an imagefs, imagefs pressure should delete unused images</span></span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalImageFsAvailable] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalImageFsInodesFree] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">// without an imagefs, nodefs pressure should delete logs, and unused images</span></span><br><span class="line">		<span class="comment">// since imagefs and nodefs share a common device, they share common reclaim functions</span></span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalNodeFsAvailable] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalNodeFsInodesFree] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalImageFsAvailable] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">		signalToReclaimFunc[evictionapi.SignalImageFsInodesFree] = nodeReclaimFuncs&#123;containerGC.DeleteAllUnusedContainers, imageGC.DeleteUnusedImages&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> signalToReclaimFunc</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实际上，在磁盘满导致节点驱逐信号触发时会直接调用容器和镜像的 GC 方法，毕竟节点驱逐的触发是更紧急的。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总的来看，Kubelet 会在<strong>节点驱逐信号触发</strong>和<strong>Image 对应的 Filesystem 空间不足</strong>的情况下删除冗余的镜像。整个 GC 的要点如下：</p>
+<ul>
+<li>清理的触发为到达 HighThresholdPercent 开始清理，一直清理到 LowThresholdPercent 为止。但是需要注意的是通过将 HighThresholdPercent 设置为 100 关闭 GC 的做法对节点驱逐不生效，只能关闭定时清理任务</li>
+<li>镜像清理过程中，有三类镜像不会被清除：<ul>
+<li>Sanbox 所需镜像；</li>
+<li>GC 首次探测和刚被刷新过最后使用时间的镜像；</li>
+<li>探测累计时长小于 MinimumGCAge 的镜像。</li>
+</ul>
+</li>
+<li>清理过程会优先清除最久没用到的和最早探测到的镜像。</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2021-04-25-analysis-of-kubelet-imagegc/" title="Kubelet Image GC原理分析" target="_blank" rel="external">https://study4.fun/2021-04-25-analysis-of-kubelet-imagegc/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021-06-25-kvm-in-action-notes/" title="《KVM实战》读书笔记"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021-01-02-blogs-workflow/" title="博客写作的工作流"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2022 Mii Wang
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="publishby">
+        	<a href="https://beian.miit.gov.cn"  target="_blank">京ICP备19042323号</a>
+        </div>
+        <!-- <div class="publishby">
+            Driven by <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank">又拍云</a>
+            
+                <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank"><img src="/youpai.png" width="60px;"/></a>
+              
+        </div> -->
+        <div class="publishby">
+            
+                <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+                <i class="icon icon-users" aria-hidden="true"></i>
+                <span id="busuanzi_container_site_uv">
+                    <span id="busuanzi_value_site_uv"></span>
+                </span>
+                <i class="icon icon-eye-fill" aria-hidden="true"></i>
+                <span id="busuanzi_container_site_pv">
+                    <span id="busuanzi_value_site_pv"></span>
+                </span>
+            
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<!-- <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> -->
+
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '写点什么吧？',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+    <script defer type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-167751203-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+
+    <script defer>
+var _hmt = _hmt || [];
+(function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0b7f2a921931e979ba955fb87b85e72d";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+</body>
+</html>

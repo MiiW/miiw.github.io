@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  <meta name="google-site-verification" content="eywtVpbCxmg86aRzv_-dHldl4sPhnGCfNbxb2ugKcoQ" />
+  
+  
+  <title>Kubernetes容器监控原理和源码解析（一）——API和数据来源 | 学而时思之</title>
+  <meta name="description" content="前言本系列主要基于 v1.24.0 版本的 Kubelet 部分源代码，进行 Kubernetes 中容器监控的底层原理介绍与代码分析。 Kubelet 中的监控 API在 Kubelet Server 提供的监控 API 中，大致可以分为两类：stats（统计数据）和 metrics（指标数据）。从命名和实际作用来看，前者提供了粗粒度的基础监控能力，目前用于各种内置组件；而后者用于持久化地进行细">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes容器监控原理和源码解析（一）——API和数据来源">
+<meta property="og:url" content="https://study4.fun/2022-05-13-kubernetes-pod-monitoring-1/">
+<meta property="og:site_name" content="Study4Fun">
+<meta property="og:description" content="前言本系列主要基于 v1.24.0 版本的 Kubelet 部分源代码，进行 Kubernetes 中容器监控的底层原理介绍与代码分析。 Kubelet 中的监控 API在 Kubelet Server 提供的监控 API 中，大致可以分为两类：stats（统计数据）和 metrics（指标数据）。从命名和实际作用来看，前者提供了粗粒度的基础监控能力，目前用于各种内置组件；而后者用于持久化地进行细">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/379285/1652198624416-d1d8746a-f7fa-4c24-997b-da9eb5f14cd7.png#clientId=u9c32ff6b-66ca-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=176&id=ufea51559&margin=%5Bobject%20Object%5D&name=image.png&originHeight=352&originWidth=2504&originalType=binary%E2%88%B6=1&rotation=0&showTitle=false&size=62580&status=done&style=none&taskId=ua1faf7f4-c21a-4728-82a0-ab77bf6daf6&title=&width=1252">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2022/png/379285/1652200676776-10e3ffcd-a3be-4ec0-b219-00d074eb4371.png#clientId=u8bb67b8d-f4bf-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=153&id=uf64befea&margin=%5Bobject%20Object%5D&name=image.png&originHeight=306&originWidth=1648&originalType=binary%E2%88%B6=1&rotation=0&showTitle=false&size=68877&status=done&style=none&taskId=ue7983b8c-2cc5-4cdc-af99-253a4f53056&title=&width=824">
+<meta property="article:published_time" content="2022-05-13T14:54:00.000Z">
+<meta property="article:modified_time" content="2022-05-21T07:33:16.600Z">
+<meta property="article:author" content="Mii Wang">
+<meta property="article:tag" content="Kubernetes">
+<meta property="article:tag" content="Pod">
+<meta property="article:tag" content="容器">
+<meta property="article:tag" content="监控">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.nlark.com/yuque/0/2022/png/379285/1652198624416-d1d8746a-f7fa-4c24-997b-da9eb5f14cd7.png#clientId=u9c32ff6b-66ca-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=176&id=ufea51559&margin=%5Bobject%20Object%5D&name=image.png&originHeight=352&originWidth=2504&originalType=binary%E2%88%B6=1&rotation=0&showTitle=false&size=62580&status=done&style=none&taskId=ua1faf7f4-c21a-4728-82a0-ab77bf6daf6&title=&width=1252">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://study4.fun/2022-05-13-kubernetes-pod-monitoring-1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Study4Fun" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.svg" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/MiiW" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.png" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">MiiW</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">一个普通开发者</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">友链</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>一个闲人的漫思</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%87%E5%BF%98%E5%BD%95/">备忘录</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%97%A5%E8%AE%B0/">日记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/API-Server/" style="font-size: 13px;">API Server</a> <a href="/tags/DNS/" style="font-size: 13px;">DNS</a> <a href="/tags/Golang/" style="font-size: 13px;">Golang</a> <a href="/tags/IPV6/" style="font-size: 13px;">IPV6</a> <a href="/tags/KVM/" style="font-size: 13px;">KVM</a> <a href="/tags/Kubernetes/" style="font-size: 14px;">Kubernetes</a> <a href="/tags/Pod/" style="font-size: 13.25px;">Pod</a> <a href="/tags/Unix/" style="font-size: 13px;">Unix</a> <a href="/tags/cgroup/" style="font-size: 13px;">cgroup</a> <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" style="font-size: 13.75px;">学习笔记</a> <a href="/tags/%E5%AE%B9%E5%99%A8/" style="font-size: 13.5px;">容器</a> <a href="/tags/%E6%9D%82%E9%A1%B9/" style="font-size: 13.25px;">杂项</a> <a href="/tags/%E7%9B%91%E6%8E%A7/" style="font-size: 13px;">监控</a> <a href="/tags/%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" style="font-size: 13.25px;">网络配置</a> <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" style="font-size: 13px;">设计模式</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 13.75px;">读书笔记</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/">2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/">2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/">2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/">2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/">2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/">2016</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2022-05-13-kubernetes-pod-monitoring-1/" class="title">Kubernetes容器监控原理和源码解析（一）——API和数据来源</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-05-13T14:54:00.000Z" itemprop="datePublished">2022-05-13</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-06-25-kvm-in-action-notes/" class="title">《KVM实战》读书笔记</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-06-25T14:39:00.000Z" itemprop="datePublished">2021-06-25</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-04-25-analysis-of-kubelet-imagegc/" class="title">Kubelet Image GC原理分析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-04-25T07:48:00.000Z" itemprop="datePublished">2021-04-25</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%9D%82%E9%A1%B9/">杂项</a>
+              </p>
+              <p class="item-title">
+                <a href="/2021-01-02-blogs-workflow/" class="title">博客写作的工作流</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-01-02T15:47:00.000Z" itemprop="datePublished">2021-01-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+              </p>
+              <p class="item-title">
+                <a href="/2020-10-30-cgroup-startings/" class="title">CGroup初探</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2020-10-30T12:55:00.000Z" itemprop="datePublished">2020-10-30</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<meta name="referrer" content="no-referrer" />
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kubernetes容器监控原理和源码解析（一）——API和数据来源" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kubernetes容器监控原理和源码解析（一）——API和数据来源
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2022-05-13-kubernetes-pod-monitoring-1/" class="article-date">
+	  <time datetime="2022-05-13T14:54:00.000Z" itemprop="datePublished">2022-05-13</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link" href="/tags/Kubernetes/" rel="tag">Kubernetes</a>, <a class="article-tag-link" href="/tags/Pod/" rel="tag">Pod</a>, <a class="article-tag-link" href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag">容器</a>, <a class="article-tag-link" href="/tags/%E7%9B%91%E6%8E%A7/" rel="tag">监控</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2022-05-13-kubernetes-pod-monitoring-1/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.8k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 11(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本系列主要基于 v1.24.0 版本的 Kubelet 部分源代码，进行 Kubernetes 中容器监控的底层原理介绍与代码分析。</p>
+<h2 id="Kubelet-中的监控-API"><a href="#Kubelet-中的监控-API" class="headerlink" title="Kubelet 中的监控 API"></a>Kubelet 中的监控 API</h2><p>在 Kubelet Server 提供的监控 API 中，大致可以分为两类：stats（统计数据）和 metrics（指标数据）。从命名和实际作用来看，前者提供了粗粒度的基础监控能力，目前用于各种内置组件；而后者用于持久化地进行细粒度的容器监控，主要提供给 Prometheus 等。</p>
+<h3 id="统计类-API"><a href="#统计类-API" class="headerlink" title="统计类 API"></a>统计类 API</h3><p>在 v1.24.0 版本中，目前统计类接口仅包含/stats/summary，该接口提供了节点和 Pod 的统计信息。节点部分包括 CPU、内存、网络、文件系统、容器运行时、Rlimit 的统计。Pod 部分主要提供 Pod 相关的基础统计与卷、临时存储、进程统计外，主要还包括了各个容器的统计信息。容器部分值得关注的是，该接口中提供了用户自定义指标。方法实现如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(h *handler)</span> <span class="title">handleSummary</span><span class="params">(request *restful.Request, response *restful.Response)</span></span> &#123;</span><br><span class="line">	onlyCPUAndMemory := <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> onlyCluAndMemoryParam, found := request.Request.Form[<span class="string">"only_cpu_and_memory"</span>]; found &amp;&amp;</span><br><span class="line">		<span class="built_in">len</span>(onlyCluAndMemoryParam) == <span class="number">1</span> &amp;&amp; onlyCluAndMemoryParam[<span class="number">0</span>] == <span class="string">"true"</span> &#123;</span><br><span class="line">		onlyCPUAndMemory = <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">var</span> summary *statsapi.Summary</span><br><span class="line">	<span class="keyword">if</span> onlyCPUAndMemory &#123;</span><br><span class="line">		summary, err = h.summaryProvider.GetCPUAndMemoryStats()</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		forceStatsUpdate := <span class="literal">false</span></span><br><span class="line">		summary, err = h.summaryProvider.Get(forceStatsUpdate)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看 SummaryProvider 的实现可以发现，该实际上就是对 stats.Provider 的封装。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> SummaryProvider <span class="keyword">interface</span> &#123;</span><br><span class="line">	Get(updateStats <span class="keyword">bool</span>) (*statsapi.Summary, error)</span><br><span class="line">	GetCPUAndMemoryStats() (*statsapi.Summary, error)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> summaryProviderImpl <span class="keyword">struct</span> &#123;</span><br><span class="line">	kubeletCreationTime metav1.Time</span><br><span class="line">	systemBootTime metav1.Time</span><br><span class="line"></span><br><span class="line">	provider Provider</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 handler 的处理逻辑中，它提供了一个只返回 CPU 和 Memory 信息的选项 onlyCPUAndMemory，如果只关心 cpu 和内存信息，通过此选项可以去除多余的统计信息，metrics-server(_&lt; 0.6.0 版本_)中就默认设置了该值。该部分需要注意的是，如果获取的是完整信息，那么监控信息是从缓存中获取的，这里特指 CPU 中的 NanoCoreUsage 不会更新，只有调用 onlyCPUAndMemory 才会将该值更新。如果基于接口做定制开发需要将 forceStatsUpdate 修改为 true 以保证 NanoCoreUsage 的准确性。<br>此外，在最新版本的 0.6.x 版本的 metrics-server 中已经不再依赖该接口，而是采用了 Kubelet 中的<a href="https://github.com/kubernetes-sigs/metrics-server/blob/6e196e2d01bdade760e9bc78c2e0abc473fdd819/pkg/scraper/client/resource/client.go#L91" target="_blank" rel="noopener">/metrics/resource 接口</a>进行资源的监控，在老版本集群中部署 metrics-server 时需要注意不兼容问题。</p>
+<h3 id="指标类-API"><a href="#指标类-API" class="headerlink" title="指标类 API"></a>指标类 API</h3><p>Kubelet Server 提供的指标类 API 目前包括以下四个：</p>
+<ul>
+<li>/metrics：提供 kubelet 自身相关的一些监控，包括：apiserver 请求、go gc/内存/线程相关、kubelet 子模块关键信息、client-go 等指标</li>
+<li>/metrics/cadvisor：提供 Pod/容器监控信息</li>
+<li>/metrics/probes：提供对容器 Liveness/Readiness/Startup 探针的指标数据</li>
+<li>/metrics/resource：提供 Pod/容器的 CPU 用量、wss 内存、启动时间基础指标数据</li>
+</ul>
+<p>上述四个接口返回的指标信息默认都是 Promtheus 格式。一般来说，指标想要转化为 Promtheus 格式需要实现 Prometheus client 的 Registerer 和 Gatherer 接口，而在 K8s 中对应的封装实现就是 KubeRegistry。这里我们先跳过 Prometheus client 的实现原理和其他非容器指标相关的实现，而是来看看容器指标数据是如何获取到并转化返回的。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">r := compbasemetrics.NewKubeRegistry()</span><br><span class="line"></span><br><span class="line">includedMetrics := cadvisormetrics.MetricSet&#123;</span><br><span class="line">    <span class="comment">// 指标白名单设置</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">cadvisorOpts := cadvisorv2.RequestOptions&#123;</span><br><span class="line">    IdType:    cadvisorv2.TypeName,</span><br><span class="line">    <span class="comment">// 每次仅返回一条数据</span></span><br><span class="line">    Count:     <span class="number">1</span>,</span><br><span class="line">    Recursive: <span class="literal">true</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">r.RawMustRegister(metrics.NewPrometheusCollector(prometheusHostAdapter&#123;s.host&#125;, containerPrometheusLabelsFunc(s.host), includedMetrics, clock.RealClock&#123;&#125;, cadvisorOpts))</span><br><span class="line">r.RawMustRegister(metrics.NewPrometheusMachineCollector(prometheusHostAdapter&#123;s.host&#125;, includedMetrics))</span><br><span class="line"></span><br><span class="line">s.restfulCont.Handle(cadvisorMetricsPath,</span><br><span class="line">                     compbasemetrics.HandlerFor(r, compbasemetrics.HandlerOpts&#123;ErrorHandling: compbasemetrics.ContinueOnError&#125;),</span><br><span class="line">                    )</span><br></pre></td></tr></table></figure>
+
+<p>在 Prometheus Client 的注册逻辑里，返回数据需要实现指标收集器（Collector）部分。这里可以看到，Kubelet 提供了两种数据收集器，一部分是 Pod/容器的指标收集器，另一部分是节点指标收集器。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewPrometheusMachineCollector</span><span class="params">(i infoProvider, includedMetrics container.MetricSet)</span> *<span class="title">PrometheusMachineCollector</span></span> &#123;</span><br><span class="line">	c := &amp;PrometheusMachineCollector&#123;</span><br><span class="line"></span><br><span class="line">		infoProvider: i,</span><br><span class="line">		errors: prometheus.NewGauge(prometheus.GaugeOpts&#123;</span><br><span class="line">			Namespace: <span class="string">"machine"</span>,</span><br><span class="line">			Name:      <span class="string">"scrape_error"</span>,</span><br><span class="line">			Help:      <span class="string">"1 if there was an error while getting machine metrics, 0 otherwise."</span>,</span><br><span class="line">		&#125;),</span><br><span class="line">		machineMetrics: []machineMetric&#123;</span><br><span class="line">			&#123;</span><br><span class="line">				name:      <span class="string">"machine_cpu_physical_cores"</span>,</span><br><span class="line">				help:      <span class="string">"Number of physical CPU cores."</span>,</span><br><span class="line">				valueType: prometheus.GaugeValue,</span><br><span class="line">				getValues: <span class="function"><span class="keyword">func</span><span class="params">(machineInfo *info.MachineInfo)</span> <span class="title">metricValues</span></span> &#123;</span><br><span class="line">					<span class="keyword">return</span> metricValues&#123;&#123;value: <span class="keyword">float64</span>(machineInfo.NumPhysicalCores), timestamp: machineInfo.Timestamp&#125;&#125;</span><br><span class="line">				&#125;,</span><br><span class="line">			&#125;,</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 其他指标的类似实现</span></span><br><span class="line">            ...</span><br><span class="line">		&#125;...)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> c</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到收集器实际上主要是通过 getValues 方法把 infoProvider 提供的数据结构从原始结构转成 Prometheus 中的指标，同时每个指标需要定义其名称、类型以及描述。节点和 Pod/容器对应的原始数据结构都定义在 cAdvisor 的 API Spec 中，即 MachineInfo 和 ContainerStats。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> infoProvider <span class="keyword">interface</span> &#123;</span><br><span class="line">	<span class="comment">// GetRequestedContainersInfo gets info for all requested containers based on the request options.</span></span><br><span class="line">	GetRequestedContainersInfo(containerName <span class="keyword">string</span>, options v2.RequestOptions) (<span class="keyword">map</span>[<span class="keyword">string</span>]*info.ContainerInfo, error)</span><br><span class="line">	<span class="comment">// GetVersionInfo provides information about the version.</span></span><br><span class="line">	GetVersionInfo() (*info.VersionInfo, error)</span><br><span class="line">	<span class="comment">// GetMachineInfo provides information about the machine.</span></span><br><span class="line">	GetMachineInfo() (*info.MachineInfo, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而从上面 KubeRegistry 的注册逻辑中可以看到，infoProvider 的实现又需要通过 prometheusHostAdapter 进行一次转换，其转换前的实现接口为 HostInterface。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> prometheusHostAdapter <span class="keyword">struct</span> &#123;</span><br><span class="line">	host HostInterface</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a prometheusHostAdapter)</span> <span class="title">GetRequestedContainersInfo</span><span class="params">(containerName <span class="keyword">string</span>, options cadvisorv2.RequestOptions)</span> <span class="params">(<span class="keyword">map</span>[<span class="keyword">string</span>]*cadvisorapi.ContainerInfo, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> a.host.GetRequestedContainersInfo(containerName, options)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a prometheusHostAdapter)</span> <span class="title">GetVersionInfo</span><span class="params">()</span> <span class="params">(*cadvisorapi.VersionInfo, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> a.host.GetVersionInfo()</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(a prometheusHostAdapter)</span> <span class="title">GetMachineInfo</span><span class="params">()</span> <span class="params">(*cadvisorapi.MachineInfo, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> a.host.GetCachedMachineInfo()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 HostInterface 的定义中，查看监控相关的部分接口，prometheusHostAdapter 需要的 VersionInfo 和 MachineInfo 是由 Kubelet 实现的，而 GetRequestedContainersInfo 即容器相关监控信息的接口则由前面提到的 stats.Provider 中实现。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> HostInterface <span class="keyword">interface</span> &#123;</span><br><span class="line">	stats.Provider</span><br><span class="line">	GetVersionInfo() (*cadvisorapi.VersionInfo, error)</span><br><span class="line">	GetCachedMachineInfo() (*cadvisorapi.MachineInfo, error)</span><br><span class="line">	GetRunningPods() ([]*v1.Pod, error)</span><br><span class="line">	GetHostname() <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 省略监控无关接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="监控数据提供方-Stats-Provider"><a href="#监控数据提供方-Stats-Provider" class="headerlink" title="监控数据提供方 Stats Provider"></a>监控数据提供方 Stats Provider</h2><h3 id="Provider-定义"><a href="#Provider-定义" class="headerlink" title="Provider 定义"></a>Provider 定义</h3><p>基于上一节分析，可以了解到 Kubelet Server 中返回的监控信息，无论是统计类信息还是指标类信息，容器相关的部分都是通过 stats.Provider 获取的。那么我们看看 stats.Provider 部分是如何定义的：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Provider <span class="keyword">interface</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ListPodStats 返回Pod管理的容器统计信息</span></span><br><span class="line">	ListPodStats() ([]statsapi.PodStats, error)</span><br><span class="line">    <span class="comment">// ListPodCPUAndMemoryStats 返回Pod管理的容器统计信息（CPU/内存部分）</span></span><br><span class="line">	ListPodCPUAndMemoryStats() ([]statsapi.PodStats, error)</span><br><span class="line">	<span class="comment">// ListPodStatsAndUpdateCPUNanoCoreUsage 返回Pod管理的容器统计信息，这个方法会强制更新cpu的NanoCoreUsage信息，主要用于部分未内部集成cAdvisor的CRI Runtime实现。详见：https://github.com/kubernetes/kubernetes/issues/72788</span></span><br><span class="line">	ListPodStatsAndUpdateCPUNanoCoreUsage() ([]statsapi.PodStats, error)</span><br><span class="line">	<span class="comment">// ImageFsStats 返回镜像文件系统的统计信息</span></span><br><span class="line">	ImageFsStats() (*statsapi.FsStats, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// GetCgroupStats 通过指定的cgroup名称返回统计信息及网络用量</span></span><br><span class="line">	GetCgroupStats(cgroupName <span class="keyword">string</span>, updateStats <span class="keyword">bool</span>) (*statsapi.ContainerStats, *statsapi.NetworkStats, error)</span><br><span class="line">	<span class="comment">// GetCgroupCPUAndMemoryStats 通过指定的cgroupName返回CPU和内存统计信息</span></span><br><span class="line">	GetCgroupCPUAndMemoryStats(cgroupName <span class="keyword">string</span>, updateStats <span class="keyword">bool</span>) (*statsapi.ContainerStats, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RootFsStats 返回节点根分区的统计信息</span></span><br><span class="line">	RootFsStats() (*statsapi.FsStats, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// GetContainerInfo 通过Pod Uid返回该Pod管理的容器的指标信息</span></span><br><span class="line">	GetContainerInfo(podFullName <span class="keyword">string</span>, uid types.UID, containerName <span class="keyword">string</span>, req *cadvisorapi.ContainerInfoRequest) (*cadvisorapi.ContainerInfo, error)</span><br><span class="line">	<span class="comment">// GetRawContainerInfo 通过容器名返回容器的指标信息，如果开启了subcontainers选项，则该方法会返回所有子容器的指标信息</span></span><br><span class="line">	GetRawContainerInfo(containerName <span class="keyword">string</span>, req *cadvisorapi.ContainerInfoRequest, subcontainers <span class="keyword">bool</span>) (<span class="keyword">map</span>[<span class="keyword">string</span>]*cadvisorapi.ContainerInfo, error)</span><br><span class="line">	<span class="comment">// GetRequestedContainersInfo 通过容器名返回容器的指标信息，同事提供了一些cAdvisor特定的可选参数</span></span><br><span class="line">	GetRequestedContainersInfo(containerName <span class="keyword">string</span>, options cadvisorv2.RequestOptions) (<span class="keyword">map</span>[<span class="keyword">string</span>]*cadvisorapi.ContainerInfo, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// GetPodByName 通过Pod的命名空间和名称返回具体的Pod信息</span></span><br><span class="line">	GetPodByName(namespace, name <span class="keyword">string</span>) (*v1.Pod, <span class="keyword">bool</span>)</span><br><span class="line">	<span class="comment">// GetNode 返回节点规格信息</span></span><br><span class="line">	GetNode() (*v1.Node, error)</span><br><span class="line">	<span class="comment">// GetNodeConfig 返回节点配置信息</span></span><br><span class="line">	GetNodeConfig() cm.NodeConfig</span><br><span class="line">	<span class="comment">// ListVolumesForPod 通过Pod Uid返回对应Pod使用的卷统计信息</span></span><br><span class="line">	ListVolumesForPod(podUID types.UID) (<span class="keyword">map</span>[<span class="keyword">string</span>]volume.Volume, <span class="keyword">bool</span>)</span><br><span class="line">	<span class="comment">// ListBlockVolumesForPod 通过Pod Uid返回对应Pod使用的块设备卷统计信息</span></span><br><span class="line">	ListBlockVolumesForPod(podUID types.UID) (<span class="keyword">map</span>[<span class="keyword">string</span>]volume.BlockVolume, <span class="keyword">bool</span>)</span><br><span class="line">	<span class="comment">// GetPods 返回节点上运行的所有Pod的信息</span></span><br><span class="line">	GetPods() []*v1.Pod</span><br><span class="line"></span><br><span class="line">	<span class="comment">// RlimitStats 返回系统的rlimit统计</span></span><br><span class="line">	RlimitStats() (*statsapi.RlimitStats, error)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// GetPodCgroupRoot 返回管理所有Pod的根Cgroup节点路径</span></span><br><span class="line">	GetPodCgroupRoot() <span class="keyword">string</span></span><br><span class="line">	<span class="comment">// GetPodByCgroupfs 通过cgroup路径名查找并返回Pod信息</span></span><br><span class="line">	GetPodByCgroupfs(cgroupfs <span class="keyword">string</span>) (*v1.Pod, <span class="keyword">bool</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过上面 Provider 的接口划分，我们大致了解了 Kubelet 在监控方面提供的能力，主要包括容器、Pod、节点、文件系统的统计信息或指标信息等。其中不少接口都用到了 cgroup。<br>cgroup（control group）是 Linux 内核中用于限制、记录和隔离一组进程的资源使用（CPU、内存、磁盘 I/O、网络等）的模块，它与 namespace 一起作为基石构成了容器基础技术的实现。绝大部分场景下，大家对他比较熟悉的点在于其发挥的资源划分和限制能力，例如 K8S 中 Pod 与 Container 的 CPU/内存资源 Limit。除了资源限制能力外，实际上 cgroup 每个子系统还具有对应的统计能力。以 CPU 子系统为例，它可以统计 CPU 在用户空间和内核空间的运行时长分配、设置 Limit 后的 CPU 限流次数和限流总时长等：<br><img src="https://cdn.nlark.com/yuque/0/2022/png/379285/1652198624416-d1d8746a-f7fa-4c24-997b-da9eb5f14cd7.png#clientId=u9c32ff6b-66ca-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=176&id=ufea51559&margin=%5Bobject%20Object%5D&name=image.png&originHeight=352&originWidth=2504&originalType=binary%E2%88%B6=1&rotation=0&showTitle=false&size=62580&status=done&style=none&taskId=ua1faf7f4-c21a-4728-82a0-ab77bf6daf6&title=&width=1252" alt="image.png"><br>Cgroup 是以树形结构来划分和组织系统内的各个进程的，Kubelet 在运行时会创建一个 kubepods 的叶节点。而根据 Pod 的 QoS 等级划分，不同 Pod 被放在不同的 QoS 叶节点下。对应的，容器本身作为 Pod 管理的最小单元，其被划分在 Pod 的叶节点以下（_需开启 containerd 中 runc 的 SystemdCgroup 选项，否则 container 由 containerd cgroup 单独管理_）。<br><img src="https://cdn.nlark.com/yuque/0/2022/png/379285/1652200676776-10e3ffcd-a3be-4ec0-b219-00d074eb4371.png#clientId=u8bb67b8d-f4bf-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=153&id=uf64befea&margin=%5Bobject%20Object%5D&name=image.png&originHeight=306&originWidth=1648&originalType=binary%E2%88%B6=1&rotation=0&showTitle=false&size=68877&status=done&style=none&taskId=ue7983b8c-2cc5-4cdc-af99-253a4f53056&title=&width=824" alt="image.png"><br>大致了解了 Cgroup 之后，细心的你就能想明白在 Provider 中不太容易理的 GetRawContainerInfo 和 GetRequestedContainersInfo 接口的用法，即参数中的 Container 指的不仅是被 Pod 管理的 Container，其实指的也是 Cgroup 的叶节点。它可以是 Container/Pod/QoS/Kubepods，甚至是节点本身（即”/“）。这也能解释为什么会有 subcontainers 这个参数，毕竟 Container 作为最小运行单元肯定是不存在子容器这个说法的。subcontainers 可以直接理解为是否包含子节点的信息，GetRawContainerInfo 接口实际上是提供了当前节点与子节点的统计信息。</p>
+<h3 id="Provider-初始化"><a href="#Provider-初始化" class="headerlink" title="Provider 初始化"></a>Provider 初始化</h3><p>provider 初始化包含在 Kubelet 的初始化流程中，通过 useLegacyCadvisorStats 开关，Kubelet 会进行会在 CadvisorStatsProvider 和 CRIStatsProvider 中选择一种作为实际实现。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewMainKubelet</span><span class="params">(kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *Dependencies, ... )</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 其他初始化流程</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">	hostStatsProvider := stats.NewHostStatsProvider(kubecontainer.RealOS&#123;&#125;, <span class="function"><span class="keyword">func</span><span class="params">(podUID types.UID)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> getEtcHostsPath(klet.getPodDir(podUID))</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="keyword">if</span> kubeDeps.useLegacyCadvisorStats &#123;</span><br><span class="line">		klet.StatsProvider = stats.NewCadvisorStatsProvider(</span><br><span class="line">			klet.cadvisor,</span><br><span class="line">			klet.resourceAnalyzer,</span><br><span class="line">			klet.podManager,</span><br><span class="line">			klet.runtimeCache,</span><br><span class="line">			klet.containerRuntime,</span><br><span class="line">			klet.statusManager,</span><br><span class="line">			hostStatsProvider)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		klet.StatsProvider = stats.NewCRIStatsProvider(</span><br><span class="line">			klet.cadvisor,</span><br><span class="line">			klet.resourceAnalyzer,</span><br><span class="line">			klet.podManager,</span><br><span class="line">			klet.runtimeCache,</span><br><span class="line">			kubeDeps.RemoteRuntimeService,</span><br><span class="line">			kubeDeps.RemoteImageService,</span><br><span class="line">			hostStatsProvider,</span><br><span class="line">utilfeature.DefaultFeatureGate.Enabled(features.DisableAcceleratorUsageMetrics)	utilfeature.DefaultFeatureGate.Enabled(features.PodAndContainerStatsFromCRI))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对比两者的初始化方法可以分析得出其主要的数据来源都是 cadvisor 和 resourceAnalyzer，其他参数是主要作为一些辅助选项。resourceAnalyzer 主要提供了节点资源消耗的统计，除了文件系统相关的统计，其主要实现还是我们之前提到的 SummaryProvider。<br>那么基本可以得出一个结论，无论是哪种实现，容器相关的监控都主要来自于 cAdvisor。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇文章中，我们主要了解了 Kubelet Server 在对外提供的监控 API 中统计类和指标类的划分，并了解到容器监控的部分主要由 Stats Provider 定义。同时，我们也知道了目前 Kubelet 中对于 Stats Provider 的实现主要有两种——CadvisorStatsProvider 和 CRIStatsProvider。接下来的一篇文章，我们会对这两种实现进行深入的对比分析，并搞清楚两种 Provider 的实现是如何使用 cAdvisor 接口的。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://study4.fun/2022-05-13-kubernetes-pod-monitoring-1/" title="Kubernetes容器监控原理和源码解析（一）——API和数据来源" target="_blank" rel="external">https://study4.fun/2022-05-13-kubernetes-pod-monitoring-1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/MiiW" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.png" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/MiiW" target="_blank"><span class="text-dark">MiiW</span><small class="ml-1x">一个普通开发者</small></a></h3>
+        <div>只是一个普通的开发者。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    
+    <li class="next">
+      <a href="/2021-06-25-kvm-in-action-notes/" title="《KVM实战》读书笔记"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/MiiW" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2022 Mii Wang
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+        <div class="publishby">
+        	<a href="https://beian.miit.gov.cn"  target="_blank">京ICP备19042323号</a>
+        </div>
+        <!-- <div class="publishby">
+            Driven by <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank">又拍云</a>
+            
+                <a href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral" target="_blank"><img src="/youpai.png" width="60px;"/></a>
+              
+        </div> -->
+        <div class="publishby">
+            
+                <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+                <i class="icon icon-users" aria-hidden="true"></i>
+                <span id="busuanzi_container_site_uv">
+                    <span id="busuanzi_value_site_uv"></span>
+                </span>
+                <i class="icon icon-eye-fill" aria-hidden="true"></i>
+                <span id="busuanzi_container_site_pv">
+                    <span id="busuanzi_value_site_pv"></span>
+                </span>
+            
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+<!-- <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> -->
+
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'DLo4pvETwglBhnQrBax94C8r-gzGzoHsz',
+    appKey: 'V2MwqBJ4G1c7fF5a7WWIClqI',
+    placeholder: '写点什么吧？',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+    <script defer type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-167751203-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+
+    <script defer>
+var _hmt = _hmt || [];
+(function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0b7f2a921931e979ba955fb87b85e72d";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+</body>
+</html>
